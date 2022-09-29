@@ -1,0 +1,22 @@
+https://www.python.org/ftp/python/3.10.7/python-3.10.7-amd64.exe
+
+python.exe -m pip install qiskit
+
+
+python.exe -m pip install matplotlib
+python.exe -m pip install windows-curses
+
+
+Save these lines to a py file and run it with python
+from qiskit import IBMQ
+IBMQ.save_account('90bbd60a3b41bc1667c13c9fa2aa51579e2e84fe0ed2519b4c7b6668224afa557f98f39854ed06d041330acc367762b2ce01498992c69024e14ca9ad4a053b74')
+
+
+download 
+q80.py
+z80.py
+cpu3.py
+
+right click on the command prompt window you are using to execute the code, select properties then layout and change the Window Size to Width:170 and Height:85
+
+
