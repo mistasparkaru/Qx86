@@ -36,11 +36,12 @@ class q80(z80):
     #QuantumExecute = "AND"
     #QuantumExecute = "XOR"
     #QuantumExecute = "OR"
-    QuantumExecute = "INCx"
+    #QuantumExecute = "INC1" #Quantum method 1 - In silicon
+    QuantumExecute = "INC2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "ADD"
     #QuantumExecute = "SetResBit"
     #QuantumExecute = "DEC"
-    #QuantumExecute = "SUBii"
+    #QuantumExecute = "SUB"
     #QuantumExecute = "LOAD"
     #QuantumExecute = "16INC"
     #QuantumExecute = "16dec"
@@ -166,35 +167,7 @@ class q80(z80):
 
         return str(int(round(qubit3))) + str(int(round(qubit2))) + str(int(round(qubit1))) + str(int(round(qubit0))) 
 
-    #def bitset(self,bit):
-
-    #    inputA = bits * math.pi
-
-    #    circuit = q.QuantumCircuit(1,1)
-    #    circuit.ry(inputA,0)
-
-    #    circuit.measure(0,0)
  
-    #    shots = 2000
-    #    job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-    #    job_monitor(job)
-    #    result = job.result()
-
-    #    memory = result.get_memory(circuit)
-
-    #    qubit0 = 0
-
-    #    for result in memory:
-    #       qubit2 = qubit2 + int(result[2])
-    #       qubit3 = qubit3 + int(result[3])
-
-    #    qubit0 = qubit0/shots
-    #    qubit1 = qubit1/shots
-    #    qubit2 = qubit2/shots
-    #    qubit3 = qubit3/shots
-
-    #    return str(int(round(qubit3))) + str(int(round(qubit2))) + str(int(round(qubit1))) + str(int(round(qubit0))) 
-
     def bitset(self,bit):
         inputA = bits * math.pi
 
@@ -503,14 +476,15 @@ class q80(z80):
         return ored
 
     def eightbitinc(self,register):
-        if self.QuantumExecute != "INC":
+        if self.QuantumExecute != "INC1" and self.QuantumExecute != "INC2":
             self.debugline = "Normal operation"
             x = int(register,2)
             x = x + 1 
 
             if x == 256: x = 0
             register = format(x, '08b')
-        else:
+        if self.QuantumExecute == "INC1":
+            self.debugline = "Quantum method 1"
             inputA = register
             inputA = inputA[::-1]
 
@@ -532,6 +506,224 @@ class q80(z80):
             output7 = str(self.myxor(int(temp),int(inputA[7])))
             temp = str(self.myand(int(temp),int(inputA[7])))
             register = output7 + output6 + output5 + output4 + output3 + output2 + output1 + output0
+        if self.QuantumExecute == "INC2":
+            self.debugline = "Quantum method 2"
+            inputA = register
+            inputA = inputA[::-1]
+            
+            incrementbit = math.pi
+            input0 = int(inputA[0]) * math.pi
+            input1 = int(inputA[1]) * math.pi
+            input2 = int(inputA[2]) * math.pi
+            input3 = int(inputA[3]) * math.pi
+            input4 = int(inputA[4]) * math.pi
+            input5 = int(inputA[5]) * math.pi
+            input6 = int(inputA[6]) * math.pi
+            input7 = int(inputA[7]) * math.pi
+
+             
+            circuit = q.QuantumCircuit(26,26)
+            self.circuit0 = "Q3"
+            #XOR0 circcuit on qubits 0 and 1 (output bit 0 on 1)
+            circuit.ry(incrementbit,0)
+            circuit.ry(input0,1)
+            circuit.cx(0,1)
+   
+            #AND0 Circuit on qubits 2,3,4 (increment on 4)
+            circuit.ry(input0,2)
+            circuit.ry(incrementbit,3)
+            circuit.ccx(2,3,4)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+             
+            #XOR1
+            circuit.ry(input1,5)
+            circuit.cx(4,5)
+            # AND1 
+            circuit.ry(input1,6)
+            circuit.ccx(6,4,7)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+
+            #XOR2 
+            circuit.ry(input2,8)
+            circuit.cx(7,8)
+            #AND2 
+            circuit.ry(input2,9)
+            circuit.ccx(9,7,10)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+ 
+            #XOR3 
+            circuit.ry(input3,11)
+            circuit.cx(10,11)
+            #AND3 
+            circuit.ry(input3,12)
+            circuit.ccx(12,10,13)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+
+            #XOR4 
+            circuit.ry(input4,14)
+            circuit.cx(13,14)
+            #AND4 
+            circuit.ry(input4,15)
+            circuit.ccx(15,13,16)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+               
+            #XOR5 
+            circuit.ry(input5,17)
+            circuit.cx(16,17)
+            #AND5 
+            circuit.ry(input5,18)
+            circuit.ccx(18,16,19)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+
+            #XOR6 
+            circuit.ry(input6,20)
+            circuit.cx(19,20)
+            #AND6 
+            circuit.ry(input6,21)
+            circuit.ccx(21,19,22)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+
+            #XOR7 
+            circuit.ry(input7,23)
+            circuit.cx(22,23)
+            #AND7 
+            circuit.ry(input7,24)
+            circuit.ccx(24,22,25)
+            circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)
+
+            circuit.measure(0,0)
+            circuit.measure(1,1) 
+            circuit.measure(2,2)
+            circuit.measure(3,3) 
+            circuit.measure(4,4)
+            circuit.measure(5,5)
+            circuit.measure(6,6) 
+            circuit.measure(7,7)
+            circuit.measure(8,8)
+            circuit.measure(9,9) 
+            circuit.measure(10,10)
+            circuit.measure(11,11)
+            circuit.measure(12,12) 
+            circuit.measure(13,13)
+            circuit.measure(14,14)
+            circuit.measure(15,15) 
+            circuit.measure(16,16)
+            circuit.measure(17,17)
+            circuit.measure(18,18) 
+            circuit.measure(19,19)
+            circuit.measure(20,20)
+            circuit.measure(21,21) 
+            circuit.measure(22,22)	
+            circuit.measure(23,23)
+            circuit.measure(24,24) 
+            circuit.measure(25,25)
+	
+            self.circuit0 = "Q2"
+
+
+            shots = 2000
+            job = q.execute(circuit, backend=backend, shots=shots, memory=True)
+            job_monitor(job)
+            result = job.result()
+
+            memory = result.get_memory(circuit)
+
+            qubit0 = 0
+            qubit1 = 0
+            qubit2 = 0
+            qubit3 = 0
+            qubit4 = 0
+            qubit5 = 0
+            qubit6 = 0
+            qubit7 = 0
+            qubit8 = 0
+            qubit9 = 0
+            qubit10 = 0
+            qubit11 = 0
+            qubit12 = 0
+            qubit13 = 0
+            qubit14 = 0
+            qubit15 = 0
+            qubit16 = 0
+            qubit17 = 0
+            qubit18 = 0
+            qubit19 = 0
+            qubit20 = 0
+            qubit21 = 0
+            qubit22 = 0
+            qubit23 = 0
+            qubit24 = 0
+            qubit25 = 0
+            
+            for result in memory:
+
+
+
+                        qubit0 = qubit0 + int(result[25])
+                        qubit1 = qubit1 + int(result[24])
+                        qubit2 = qubit2 + int(result[23])
+                        qubit3 = qubit3 + int(result[22])
+                        qubit4 = qubit4 + int(result[21])
+                        qubit5 = qubit5 + int(result[20])
+                        qubit6 = qubit6 + int(result[19])
+                        qubit7 = qubit7 + int(result[18])
+                        qubit8 = qubit8 + int(result[17])
+                        qubit9 = qubit9 + int(result[16])
+                        qubit10 = qubit10 + int(result[15])
+                        qubit11 = qubit11 + int(result[14])
+                        qubit12 = qubit12 + int(result[13])
+                        qubit13 = qubit13 + int(result[12])
+                        qubit14 = qubit14 + int(result[11])
+                        qubit15 = qubit15 + int(result[10])
+                        qubit16 = qubit16 + int(result[8])
+                        qubit17 = qubit17 + int(result[8])
+                        qubit18 = qubit18 + int(result[7])
+                        qubit19 = qubit19 + int(result[6])
+                        qubit20 = qubit20 + int(result[5])
+                        qubit21 = qubit21 + int(result[4])
+                        qubit22 = qubit22 + int(result[3])
+                        qubit23 = qubit23 + int(result[2])
+                        qubit24 = qubit24 + int(result[1])
+                        qubit25 = qubit25 + int(result[0])
+                        
+
+            qubit0 = qubit0/shots
+            qubit1 = qubit1/shots
+            qubit2 = qubit2/shots
+            qubit3 = qubit3/shots
+            qubit4 = qubit4/shots
+            qubit5 = qubit5/shots
+            qubit6 = qubit6/shots
+            qubit7 = qubit7/shots
+            qubit8 = qubit8/shots
+            qubit9 = qubit9/shots
+            qubit10 = qubit10/shots
+            qubit11 = qubit11/shots
+            qubit12 = qubit12/shots
+            qubit13 = qubit13/shots
+            qubit14 = qubit14/shots
+            qubit15 = qubit15/shots
+            qubit16 = qubit16/shots
+            qubit17 = qubit17/shots
+            qubit18 = qubit18/shots
+            qubit19 = qubit19/shots
+            qubit20 = qubit20/shots
+            qubit21 = qubit21/shots
+            qubit22 = qubit22/shots
+            qubit23 = qubit23/shots
+            qubit24 = qubit24/shots
+            qubit25 = qubit25/shots
+
+  
+
+            
+
+            register = str(int(qubit23)) + str(int(qubit20)) + str(int(qubit17)) + str(int(qubit14)) + str(int(qubit11)) + str(int(qubit8)) + str(int(qubit5)) + str(int(qubit1))
+
+
+
+
+
 
         self.clearop()
         self.delay = 1
@@ -548,7 +740,7 @@ class q80(z80):
         return register
      
     def eightBitDecNoFlags(self,register):
-        if self.QuantumExecute != "DECi":
+        if self.QuantumExecute != "DEC":
             self.debugline = "Normal operation"
             x = register
             x = x - 1
@@ -621,7 +813,7 @@ class q80(z80):
 
 
     def eightBitIncNoFlags(self,register):
-        if self.QuantumExecute != "INCi":
+        if self.QuantumExecute != "INC":
             self.debugline = "Normal operation"
             x = register
             x = x + 1 
@@ -2341,7 +2533,7 @@ class q80(z80):
             return  self.fourbitset(bit0 + bit1 + bit2 + bit3) + self.fourbitset(bit4 + bit5 + bit6 + bit7)
 
     def singleload(self,bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7):
-        if self.QuantumExecute != "LOAD3i":
+        if self.QuantumExecute != "LOAD3":
             self.debugline = "Normal operation"
             return bit0 + bit1 + bit2 + bit3 + bit4 + bit5 + bit6 + bit7
         else:
@@ -2464,7 +2656,7 @@ class q80(z80):
                     return original
 
     def regtodatabus(self,register):
-        if self.QuantumExecute != "LOAD3i":#was load2
+        if self.QuantumExecute != "LOAD2":
             self.debugline = "Normal operation"
  
             self.d7 = bool(int(register[0]))
@@ -2490,7 +2682,7 @@ class q80(z80):
             self.d0 = bool(int(output[7]))
 
     def regtoaddrbus(self,register):
-        if self.QuantumExecute != "LOAD3i":#was load2
+        if self.QuantumExecute != "LOAD2":
             self.debugline = "Normal operation"
  
             self.a15 = bool(int(register[0]))
@@ -2587,7 +2779,7 @@ class q80(z80):
 
 
     def decNoFlags(self,number):
-        if self.QuantumExecute != "LOAD3i":#was LOAD2
+        if self.QuantumExecute != "LOAD2":
             self.debugline = "Normal operation"
             number = number - 1
             if number < 0: number = number + 65536
@@ -2841,7 +3033,7 @@ class q80(z80):
             self.delay =  1
      
     def setPC(self,addr):
-        if self.QuantumExecute != "LOAD3i":#was JUMP
+        if self.QuantumExecute != "JUMP":
             self.debugline = "Normal operation"
             return addr
         else:
@@ -2850,7 +3042,7 @@ class q80(z80):
 
 
     def conditionalSetPC(self,addr,condition):
-        if self.QuantumExecute != "LOAD3":#was JUMP
+        if self.QuantumExecute != "JUMP":
             self.debugline = "Normal operation"
             if condition == "1": return addr
             else: return False
@@ -2860,7 +3052,7 @@ class q80(z80):
             else: return False
 
     def checkFlag(self,condition):
-        if self.QuantumExecute != "LOAD3":#was JUMP
+        if self.QuantumExecute != "JUMP":
             self.debugline = "Normal operation"
             if condition == "1": return "1"
             else: return "0"
@@ -3000,7 +3192,7 @@ class q80(z80):
 
 
     def eightBitSubNoFlagsUnsigned(self,number1,number2):
-        if self.QuantumExecute != "LOAD3i":
+        if self.QuantumExecute != "LOAD3":
             self.debugline = "Normal operation"
             output = number1 - number2
             self.debugline = "number 1 " + str(number1) + " - number2 " + str(number2) + " = " + str(output)
@@ -3088,7 +3280,7 @@ class q80(z80):
 
 
     def sixteenBitAddNoFlags(self,number1,number2):
-        if self.QuantumExecute != "load3i":
+        if self.QuantumExecute != "LOAD3":
             self.debugline = "normal operation"
             output = number1 + number2
             if output < 0: output = output + 65536
@@ -3257,7 +3449,7 @@ class q80(z80):
 
 
     def eightBitAddNoFlagsNotSigned(self,number1,number2):
-        if self.QuantumExecute != "ADDi":
+        if self.QuantumExecute != "ADD":
             output = number1 + number2
             if output < 0: output = output + 256
             if output > 255: output = output - 256
@@ -3429,7 +3621,7 @@ class q80(z80):
             return sub
 
     def sixteenBitAddNoFlags(self,number1,number2):
-        if self.QuantumExecute != "ADDii":
+        if self.QuantumExecute != "ADD":
             self.debugline = "Normal operation"
             output = number1 - number2
             output = number1 + number2
