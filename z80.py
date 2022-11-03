@@ -1028,34 +1028,13 @@ class z80:
                                 self.finalstage(1)
                                 self.readmode()
                                 
-                                #rr = int(self.H + self.L,2)
-                                #rr = rr + 1
-                                #if rr > 65535:
-                                #    rr = rr - 65536
-                                #total = format(rr,'016b')
                                 total = format(self.incNoFlags(int(self.H + self.L,2)),'016b')
 
-
-                                #r1 = total[0] + total[1] + total[2] + total[3] + total[4] + total[5] + total[6] + total[7]
-                                #r2 = total[8] + total[9] + total[10] + total[11] + total[12] + total[13] + total[14] + total[15]
-
-                                #self.H = r1
-                                #self.L = r2
                                 self.H = self.singleload(total[0],total[1],total[2],total[3],total[4],total[5],total[6],total[7])
                                 self.L = self.singleload(total[8],total[9],total[10],total[11],total[12],total[13],total[14],total[15])
-                                
-                                #r = int(self.B,2)
-                                #r = r - 1
-                                #if r < 0:
-                                #    r = r + 256
-                                #self.B = format(r,'08b')
+                     
+
                                 self.B = format(    self.eightBitDecNoFlags(int(self.B,2))      ,'08b')
-                                #x = self.eightBitIncNoFlags(21)
-                                #strx = str(x)
-                                #self.B = format(    self.eightBitIncNoFlags(   )     ,'08b')
-
-
-
 
                                 Z = "0"
                                 if self.B == "00000000": Z = "1"
@@ -1064,11 +1043,9 @@ class z80:
                                 self.PC = self.incNoFlags(self.prejumppc)
 
                                 if self.operand1 == "10110010": 
-                                    #self.PC = self.prejumppc - 1
                                     self.PC = self.decNoFlags(self.prejumppc)
 
                                 if self.B == "00000000" and self.operand1 == "10110010":
-                                    #self.PC = self.prejumppc + 1
                                     self.PC = self.incNoFlags(self.prejumppc)
 
 
@@ -3702,7 +3679,7 @@ class z80:
                     self.delay = 1
                     #No flags effected
 
-                if self.opcode == "00011110": #0e =  LD E,N
+                if self.opcode == "00011110": #1e =  LD E,N
                     self.E = self.singleload(self.operand1[0],self.operand1[1],self.operand1[2],self.operand1[3],self.operand1[4],self.operand1[5],self.operand1[6],self.operand1[7])
                     self.clearop()
                     self.delay = 1
@@ -5405,15 +5382,10 @@ class z80:
         number = number + 1
         if number == 65536: number = 0
         return number
-    
-    def eightBitIncNoFlags(self,number):
-        number = number + 1
-        if number == 256: number = 0
-        return number
-    
+       
     def eightBitDecNoFlags(self,number):
         number = number - 1
-        if number < 0: number = number +  255
+        if number < 0: number = number +  256
         return number
  
     def checkFlag(self,condition):

@@ -2,7 +2,6 @@ import time
 import curses
 import os
 import atexit
-import array
 from threading import Timer,Thread,Event
 import sys
 from datetime import datetime
@@ -21,14 +20,13 @@ def signal_handler(signal, frame):
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
-
 #create emulated cpu
 cpu = z80()
 
 #create the Quantum CPU
 qpu = q80()
 
-#setup output
+#setup screen output
 screen = curses.initscr()
 curses.noecho()
 screen.nodelay(1)
@@ -39,66 +37,214 @@ curses.init_pair(2,curses.COLOR_GREEN,curses.COLOR_BLACK)
 curses.init_pair(3,curses.COLOR_RED,curses.COLOR_BLACK)
 curses.init_pair(4,curses.COLOR_MAGENTA,curses.COLOR_BLACK)
 
-pad = curses.newpad(200,200)
-
-class perpetualTimer():
-
-   def __init__(self,t,hFunction):
-      self.t=t
-      self.hFunction = hFunction
-      self.thread = Timer(self.t,self.handle_function)
-
-   def handle_function(self):
-      self.hFunction()
-      self.thread = Timer(self.t,self.handle_function)
-      self.thread.start()
-
-   def start(self):
-      self.thread.start()
-   
-   def cancel(self):
-      self.thread.cancel()
-
-def screenRefresh():
-    global pad
-    global updating
-
-    updating = True
-    now = datetime.now()
-    pad.erase()
-    pad.addstr("Local system time = " + now.strftime("%H:%M:%S"))
-
-    lineoffset = 2
-    pad.addstr(lineoffset + 0,0, qpu.circuit0)
-    pad.addstr(lineoffset + 1,0, qpu.circuit1)
-    pad.addstr(lineoffset + 2,0, qpu.circuit2)
-    pad.addstr(lineoffset + 3,0, qpu.circuit3)
-    pad.addstr(lineoffset + 4,0, qpu.circuit4)
-    pad.addstr(lineoffset + 5,0, qpu.circuit5)
-    pad.addstr(lineoffset + 6,0, qpu.circuit6)
-    pad.addstr(lineoffset + 7,0, qpu.circuit7)
-    pad.keypad(True)
-    
-    #for x in range(8,17):
-    #    pad.addstr(lineoffset + x,0,"")
- 
-    pad.refresh( 0,0, 64 ,0, 80,150)
-
-    updating = False
-
-    
-
-t = perpetualTimer(5,screenRefresh)
-t.start()
-
-#**************************a few functions to make the code easier to read*******************************
+#make writing of machine code into ram easier
 def opcodetoram(code):
     bitstring = "{0:08b}".format(int(code,16))
     BYTE = [bool(int(bitstring[7])),bool(int(bitstring[6])),bool(int(bitstring[5])),bool(int(bitstring[4])),bool(int(bitstring[3])),bool(int(bitstring[2])),bool(int(bitstring[1])),bool(int(bitstring[0]))]
     return BYTE
 
-def bool8str(d7,d6,d5,d4,d3,d2,d1,d0): #checking each bit is a little faster than + ing string or .join ing them
-   # line = "".join([str(int(d7)) , str(int(d6)) , str(int(d5)) , str(int(d4)) , str(int(d3)) , str(int(d2)) , str(int(d1)) , str(int(d0))])
+
+
+#************************************setup ram**********************************************************
+
+eRAM = [] #Array for emulated CPUs RAM
+qRAM = [] #Array for emulated CPU on a Quantum Computers RAM
+
+
+def resetram():
+    global qpu
+    x = 0
+    numberofbytes = 65536
+    while x < numberofbytes:
+
+        eRAM.append([False,False,False,False,False,False,False,False])
+        qRAM.append([False,False,False,False,False,False,False,False])
+        x = x + 1
+
+   
+    #if we have an input file read it into RAM else load a smaple program
+    filename = ""
+    address = 0
+    if sys.argv[1:]:
+        filename = sys.argv[1]
+    
+        file = open(filename,"rb")
+        byte = file.read(1)
+        while byte:
+            number = int.from_bytes(byte,byteorder='big')
+            line = format(int(number),'02x')
+            line = line.upper()
+            eRAM[address] = opcodetoram(line)
+            qRAM[address] = opcodetoram(line)
+            address = address + 1
+            byte = file.read(1)
+    
+        file.close()
+    else:
+
+        #************************************Example program section**********************************************************
+
+
+        #increment
+        qpu.QuantumExecute = "INC2"
+        eRAM[0] = opcodetoram("3e") #LOAD A,
+        eRAM[1] = opcodetoram("07") #with 07
+        eRAM[2] = opcodetoram("3c") #INC A
+        eRAM[3] = opcodetoram("76") #Halt
+
+        #decrement
+        #qpu.QuantumExecute = "DEC2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("07") #with 07
+        #eRAM[2] = opcodetoram("3d") #DEC A
+        #eRAM[3] = opcodetoram("76") #Halt
+
+        #add
+        #qpu.QuantumExecute = "ADD2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("02") #with 02
+        #eRAM[3] = opcodetoram("06") #LOAD B,
+        #eRAM[4] = opcodetoram("02") #with 02
+        #eRAM[5] = opcodetoram("80") #ADD A,B
+        #eRAM[6] = opcodetoram("76") #Halt
+
+        #sub
+        #qpu.QuantumExecute = "SUB2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("15") #with 15
+        #eRAM[2] = opcodetoram("06") #LOAD B,
+        #eRAM[3] = opcodetoram("02") #with 02
+        #eRAM[4] = opcodetoram("90") #SUB B
+        #eRAM[5] = opcodetoram("76") #Halt
+
+        #and
+        #qpu.QuantumExecute = "AND2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("05") #with 05
+        #eRAM[2] = opcodetoram("06") #LOAD B,
+        #eRAM[3] = opcodetoram("04") #with 04
+        #eRAM[4] = opcodetoram("a0") #AND A,B
+        #eRAM[5] = opcodetoram("76") #Halt
+		
+        #or
+        #qpu.QuantumExecute = "OR2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("07") #with 07
+        #eRAM[2] = opcodetoram("06") #LOAD B,
+        #eRAM[3] = opcodetoram("00") #with 00
+        #eRAM[4] = opcodetoram("b0") #OR A,B
+        #eRAM[5] = opcodetoram("76") #Halt
+
+        #xor
+        #qpu.QuantumExecute = "XOR2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("06") #with 06
+        #eRAM[2] = opcodetoram("06") #LOAD B,
+        #eRAM[3] = opcodetoram("02") #with 02
+        #eRAM[4] = opcodetoram("a8") #XOR A,B
+        #eRAM[5] = opcodetoram("76") #Halt
+
+        #Res 
+        #qpu.QuantumExecute = "SetResBit2"
+        #eRAM[0] = opcodetoram("2e") #LOAD L,
+        #eRAM[1] = opcodetoram("ff") #with ff
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("bd") #RES 7,L
+        #eRAM[4] = opcodetoram("76") #Halt
+
+        #Set
+        #qpu.QuantumExecute = "SetResBit2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("00") #with 00
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("c7") #Set 0,A
+        #eRAM[4] = opcodetoram("76") #Halt
+		
+		#Bit
+        #qpu.QuantumExecute = "SetResBit2"
+        #eRAM[0] = opcodetoram("2e") #LOAD L,
+        #eRAM[1] = opcodetoram("ff") #with ff
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("6d") #BIT L,5
+        #eRAM[4] = opcodetoram("76") #Halt
+
+        #load
+        #qpu.QuantumExecute = "LOAD2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("26") #with 26
+        #eRAM[2] = opcodetoram("76") #Halt
+ 
+        #PUSH
+        #qpu.QuantumExecute = "AddrBus2" #Or
+        #qpu.QuantumExecute = "DataBus2" #Or
+        #qpu.QuantumExecute = "DEC2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("01") #with 01
+        #eRAM[2] = opcodetoram("f5") #PUSH AF
+        #eRAM[4] = opcodetoram("76") #Halt
+
+        #POP
+        #qpu.QuantumExecute = "LOAD2" #Or
+        #qpu.QuantumExecute = "INC2"
+        #eRAM[1] = opcodetoram("f1") #POP AF
+        #eRAM[2] = opcodetoram("76") #Halt
+
+        #Rotate
+        #qpu.QuantumExecute = "ROT2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("7f") #with 7f
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("27") #SLA A (slew left/rotate)
+        #eRAM[4] = opcodetoram("76") #Halt
+       
+        #DAA
+        #qpu.QuantumExecute = "SUB2" #Or
+        #qpu.QuantumExecute = "ADD2" #Or
+        #qpu.QuantumExecute = "LOAD2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("01") #with 01
+        #eRAM[2] = opcodetoram("3d") #DEC A (to set CNH flags)
+        #eRAM[3] = opcodetoram("27") #DAA
+        #eRAM[4] = opcodetoram("76") #Halt
+          
+        #Jump if
+        #qpu.QuantumExecute = "LOAD2"
+        #eRAM[0] = opcodetoram("37") #SCF
+        #eRAM[1] = opcodetoram("da") #JP C,xx
+        #eRAM[2] = opcodetoram("0a") #Jump to xx0a
+        #eRAM[3] = opcodetoram("00") #Jump to 000a
+        #eRAM[4] = opcodetoram("76") #Halt
+        #eRAM[15] = opcodetoram("76") #Halt
+        
+        #CP
+        #qpu.QuantumExecute = "CP2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("07") #with 07
+        #eRAM[2] = opcodetoram("06") #LOAD B,
+        #eRAM[3] = opcodetoram("07") #with 07
+        #eRAM[4] = opcodetoram("bf") #CP A,B
+        #eRAM[5] = opcodetoram("76") #Halt
+
+ 
+
+ 
+
+ 
+
+
+
+
+
+
+    x = 0
+    numberofbytes = 65535 
+    while x < numberofbytes:
+        qRAM[x] = eRAM[x]
+        x = x + 1
+
+resetram()
+
+def bool8str(d7,d6,d5,d4,d3,d2,d1,d0): #checking each bit is a little faster than typecasting to a sting
     line = ""
     if d7 == True: line = line + "1"
     else: line = line + "0"
@@ -119,7 +265,6 @@ def bool8str(d7,d6,d5,d4,d3,d2,d1,d0): #checking each bit is a little faster tha
     return line
 
 def bool16str(a15,a14,a13,a12,a11,a10,a9,a8,a7,a6,a5,a4,a3,a2,a1,a0):
-    #line = "".join([str(int(a15)) , str(int(a14)) , str(int(a13)) , str(int(a12)) , str(int(a11)) , str(int(a10)) , str(int(a9)) , str(int(a8)) , str(int(a7)) , str(int(a6)) , str(int(a5)) , str(int(a4)) , str(int(a3)) , str(int(a2)) , str(int(a1)) , str(int(a0))])
     line = ""
     if a15 == True: line = line + "1"
     else: line = line + "0"
@@ -258,73 +403,8 @@ def notoascii(number):
     if number == 126: letter = "~"
     return letter
 
-
-#************************************setup ram**********************************************************
-pRAM = []
-eRAM = []
-qRAM = []
-
-
-def resetram():
-    x = 0
-    numberofbytes = 65536
-    while x < numberofbytes:
-        pRAM.append([False,False,False,False,False,False,False,False])
-        eRAM.append([False,False,False,False,False,False,False,False])
-        qRAM.append([False,False,False,False,False,False,False,False])
-        x = x + 1
-
-   
-    #if we have an input file read it into RAM else load a smaple program
-    filename = ""
-    address = 0
-    if sys.argv[1:]:
-        filename = sys.argv[1]
-    
-        file = open(filename,"rb")
-        byte = file.read(1)
-        while byte:
-            number = int.from_bytes(byte,byteorder='big')
-            line = format(int(number),'02x')
-            line = line.upper()
-            pRAM[address] = opcodetoram(line)
-            eRAM[address] = opcodetoram(line)
-            qRAM[address] = opcodetoram(line)
-            address = address + 1
-            byte = file.read(1)
-    
-        file.close()
-    else:
-       
-        #increment
-        pRAM[0] = opcodetoram("3e")
-        pRAM[1] = opcodetoram("04")
-        pRAM[2] = opcodetoram("3c")
-        pRAM[3] = opcodetoram("32")
-        pRAM[4] = opcodetoram("0f")
-        pRAM[5] = opcodetoram("00")
-        pRAM[6] = opcodetoram("76")
-        
   
-
-
-
-
-
-
-
-    x = 0
-    numberofbytes = 65535 
-    while x < numberofbytes:
-        eRAM[x] = pRAM[x]
-        qRAM[x] = pRAM[x]
-        x = x + 1
-
-resetram()
-   
 #******************************************setup the variables*********************************
-
-
 
 
 updating = False
@@ -333,7 +413,6 @@ ticks = 0
 pause = False
 ticklen = 0.001
 running = True
-plastaddrline = ""
 elastaddrline = ""
 qlastaddrline = ""
 debugline = ""
@@ -344,13 +423,6 @@ syncdelay = 4
 resetticks = 0
 oldflagline = ""
 olddebugline = ""
-poldoutputchar = ""
-pConsoleline = []
-pConsoleline.append("")
-pConsoleline.append("")
-pConsoleline.append("")
-pConsoleline.append("")
-pConsoleline.append("")
 eoldoutputchar = ""
 eConsoleline = []
 eConsoleline.append("")
@@ -366,12 +438,11 @@ qConsoleline.append("")
 qConsoleline.append("")
 qConsoleline.append("")
 logfile = open("log.txt","w")
-logfile.write("Ticks\tP-PC\tE-PC\tMatch\tQ-PC\tMatch\tE-OPC\tQ-OPC\tInstruction\n")
+logfile.write("Ticks\tE-PC\tQ-PC\tE-OPC\tQ-OPC\tInstruction\n")
 tic = ""
 toc = ""
 freq = "0"
 ticcounter = 0
-pConsoleno = 0
 eConsoleno = 0
 qConsoleno = 0
 frame = 0
@@ -452,7 +523,7 @@ while running == True:
 
         
         #**********************************Title**********************************************************
-        line = "Z80 Emulation comparison"
+        line = "Intel 8080/Z80 - Traditional to Quantum emulation comparison"
         if sys.argv[1:]:
             if sys.argv[1] != "": 
                 line = line + " (" + sys.argv[1] + ") (" + endTime + ")" 
@@ -464,7 +535,7 @@ while running == True:
                         endTime = "Complete " + str(end) + " seconds"
 
         if frame == rframe: 
-            screen.addstr(0,25,line)
+            screen.addstr(0,17,line)
             screen.addstr(2,0,"Total clock ticks = " + str(ticks))
             screen.addstr(4,0,"**Traditionally Emuldated Z80**",curses.color_pair(2))
             screen.addstr(4,60,"**Z80 Emulated on a Quantum computer**",curses.color_pair(4))
@@ -521,7 +592,6 @@ while running == True:
             qpu.d7 = qRAM[qy][7]
 
 
-#we have to do the emulated cpu clock after setting the pins else we would read the previous value, the physical cpu needs time for its pins to calm down and we dont know its PC until we have read the address is wants
         if pause == False and syncdelay == 0:
             cpu.clock(True)
             qpu.clock(True)
@@ -730,32 +800,14 @@ while running == True:
             if cpu.PC != qpu.PC: screen.addstr(lineoffset + 16,132,"(Desynced)",curses.color_pair(3))
 
  
-            #screen.addstr(lineoffset + 33,0,"")
-
-            #screen.addstr(lineoffset + 34,0,qpu.circuit0)
-            #screen.addstr(lineoffset + 35,0,qpu.circuit1)
-            #screen.addstr(lineoffset + 36,0,qpu.circuit2)
-            #screen.addstr(lineoffset + 37,0,qpu.circuit3)
-            #screen.addstr(lineoffset + 38,0,qpu.circuit4)
-            #screen.addstr(lineoffset + 39,0,qpu.circuit5)
-            #screen.addstr(lineoffset + 40,0,qpu.circuit6)
-            #screen.addstr(lineoffset + 41,0,qpu.circuit7)
-
-            #screen.addstr(lineoffset + 42,0,"")
-
-
+   
 
         #******************************************record instructions to log.txt***************************** 
         
        
                         
         if cpu.opcode != "" and qpu.opcode !="":
-            allignment = "Good"
-            if memaddr != cpu.PC: allignment = "Bad"
-            eallignment = "Good"
-            if cpu.PC != qpu.PC: eallignment = "bad"
-            newdebugline = str(ticks) + "\t" + str(memaddr) + "\t" +  str(cpu.PC) + "\t" + allignment + "\t" + str(qpu.PC) + "\t" + eallignment + "\t" + format(int(cpu.opcode,2),'02x') + "\t" + format(int(qpu.opcode,2),'02X')   + "\t" + cpu.instructionname + "\n" 
-
+            newdebugline = str(ticks) + "\t" + str(cpu.PC) + "\t" + str(qpu.PC) + "\t" + format(int(cpu.opcode,2),'02x') + "\t" + format(int(qpu.opcode,2),'02X')   + "\t" + cpu.instructionname + "\n" 
             logfile.write(newdebugline)
        
         
@@ -766,7 +818,6 @@ while running == True:
            input = screen.getch()
            if input == ord('r') or cleanreset == False: #reset must be active for at least 3 clock ticks
                 resetticks = 0
-                pRAM.clear()
                 eRAM.clear()
                 qRAM.clear()
                 resetram()
@@ -799,56 +850,11 @@ while running == True:
                 curses.echo()
                 curses.endwin()
                 running = False
-                t.cancel()
                 exit(0)
 
 
-           if input == ord('m'): #save physical ram
-               ramfile = open("ram.txt","w")
 
-               x = 0
-               y = 0
-
-               while x < 65535:
-                   
-                   pRamString = bool8str(pRAM[x][7],pRAM[x][6],pRAM[x][5],pRAM[x][4],pRAM[x][3],pRAM[x][2],pRAM[x][1],pRAM[x][0]) 
-                   ramfile.write(format(int(pRamString,2),'02x')  + "\t")
-                   x = x + 1
-                   y = y + 1
-                   if y == 8: 
-                       y = 0;
-                       ramfile.write("\r\n")
-
-
-
-               ramfile.close()
-
-
-
-
-
-           if input == ord('d'):
-                x = 0
-                numberofbytes = 65536
-                line = ""
-                debugline = ""
-                while x < numberofbytes:
-                    if pRAM[x] != eRAM[x]:
-                        debugline = debugline + "Found a Physical - Emualtied differnce at " + str(x) + ", pRAM = " +  str(int(pRAM[x][7])) +  str(int(pRAM[x][6])) +  str(int(pRAM[x][5])) +  str(int(pRAM[x][4])) +  str(int(pRAM[x][3])) +  str(int(pRAM[x][2])) + str(int(pRAM[x][1])) + str(int(pRAM[x][0])) +  " eRAM = " + str(int(eRAM[x][7])) +  str(int(eRAM[x][6])) +  str(int(eRAM[x][5])) +  str(int(eRAM[x][4])) +  str(int(eRAM[x][3])) +  str(int(eRAM[x][2])) +  str(int(eRAM[x][1])) +  str(int(eRAM[x][0])) + " "
-                    x = x + 1  
-
-                x = 0
-                numberofbytes = 65536
-                line = ""
-                
-                while x < numberofbytes:
-                    if qRAM[x] != eRAM[x]:
-                        debugline = debugline + "Found a Quantum - Emualtied differnce at " + str(x) + ", qRAM = " +  str(int(qRAM[x][7])) +  str(int(qRAM[x][6])) +  str(int(qRAM[x][5])) +  str(int(qRAM[x][4])) +  str(int(qRAM[x][3])) +  str(int(qRAM[x][2])) + str(int(qRAM[x][1])) + str(int(qRAM[x][0])) +  " eRAM = " + str(int(eRAM[x][7])) +  str(int(eRAM[x][6])) +  str(int(eRAM[x][5])) +  str(int(eRAM[x][4])) +  str(int(eRAM[x][3])) +  str(int(eRAM[x][2])) +  str(int(eRAM[x][1])) +  str(int(eRAM[x][0])) + " "
-                    x = x + 1  
-
-
-
-            #quick and easy way to scroll through ram
+           #quick and easy way to scroll through ram
            if input == curses.KEY_DOWN:
                 viewoffset = viewoffset + 16
                 if viewoffset > 65535: viewoffset = (65535 - 16)
@@ -871,7 +877,6 @@ while running == True:
         
         if frame == rframe:
             if updating == False:
-                screenRefresh()
                 screen.refresh()
                 frame = 0
 
@@ -887,7 +892,6 @@ def exit_handler():#clean up of curses
     os.system('stty sane')
     power.value = False
     logfile.close()
-    t.cancel()
     exit(0)
 atexit.register(exit_handler)
 
