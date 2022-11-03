@@ -41,6 +41,9 @@ https://quantum-computing.ibm.com/
 
 6. Once singed up, copy your API token by navigating to your IBM account setting in the IBM quantum page.
 
+![image](https://user-images.githubusercontent.com/66572228/199702656-c9708def-971a-4ca1-a053-3e8de32f2ef7.png)
+
+
 7. Download the following files form this repository
 ```
 Account.py #A script which connects you to your IBM account
@@ -59,10 +62,22 @@ Python.exe Acccount.py
 Python.exe cpu3.py
 ```
 This will run the traditional emulator and emulator for execution on a quantum computer side by side, not the ram contains a simple program which loads the A register, increments A then halts.
+
+![image](https://user-images.githubusercontent.com/66572228/199703390-af98205e-d405-4c52-92bf-154daf02605d.png)
+
+
 To exit the emulator press the Q button.
 10. The next step is to tell the emulator which instructions to execute on the quantum computer. This is done by editing the cpu3.py file and scrolling down until you get to the Example program section and un-comment the line #qpu.QuantumExecute = "INC2" 
-11. We can now run the emulator again, but note when the program counter gets to the INC instruction (3C) delay pauses, this is the emulator joining the queue for execution on one of IBMs quantum computers. After roughly 30 second the results will be returned from IBM and we can see the A register has incremented. When we quit the emulator all the quantum circuits used to execute the instruction will be displayed for reference.
 
+![image](https://user-images.githubusercontent.com/66572228/199703594-21d78f1e-a9b6-44c6-be81-bdf6e7841f28.png)
+
+11. We can now run the emulator again, but note when the program counter gets to the INC instruction (3C) delay pauses, this is the emulator joining the queue for execution on one of IBMs quantum computers. After roughly 30 second the results will be returned from IBM and we can see the A register has incremented.
+
+![image](https://user-images.githubusercontent.com/66572228/199703816-66f6fc91-3521-4a6a-b134-af0d646c28ba.png)
+
+12. When we quit the emulator all the quantum circuits used to execute the instruction will be displayed for reference.
+
+![image](https://user-images.githubusercontent.com/66572228/199703991-298904eb-b147-4de0-9e4b-002be4ee2446.png)
 
 
 ## FAQ
