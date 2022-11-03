@@ -84,7 +84,7 @@ Python.exe cpu3.py myprogram.bin
 
 
 ## FAQ
-- Why does it take so long to execute?<br>
+- Why does it take so long to execute, I thought qunatum computers where fast?<br>
 The majority of the delay is due to the queue we have to join for execution, but other delays include the latency of the API call and the fact that quantum computers are not designed to perform traditional logic operations.
 
 - Why can’t I run the entire binary on the quantum computer?<br>
