@@ -64,7 +64,8 @@ This will run the traditional emulator and emulator for execution on a quantum c
 
 ![image](https://user-images.githubusercontent.com/66572228/199703390-af98205e-d405-4c52-92bf-154daf02605d.png)
 
-To exit the emulator, press the Q button.
+To exit the emulator, press the Q button.<br>
+
 10. The next step is to tell the emulator which instructions to execute on the quantum computer. This is done by editing the cpu3.py file and scrolling down until you get to the Example program section. This section contains a number of sample programs, in this example un-comment the line #qpu.QuantumExecute = "INC2" 
 
 ![image](https://user-images.githubusercontent.com/66572228/199703594-21d78f1e-a9b6-44c6-be81-bdf6e7841f28.png)
