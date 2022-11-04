@@ -95,7 +95,7 @@ As you would have to join a queue for each instruction it would be extremely slo
 I have included multiple methods for each instruction, method 1 (INC1) calls each gate separately whereas method 2 (INC2) implements a quantum circuit for the entire (where possible) instruction so is much faster.
 
 - Why call it Qx86 when you only have intel 8080/Z80 compatibility?<br>
-Artistic license! and the fact that a q80 is a television and a qx80 is a car. Intel x86 compatibility is planned but will require more qubits, due to the larger internal registers.
+Artistic license! Alos q80 is a television and a qx80 is a car so those names were taken. Intel x86 compatibility is planned but will require more qubits due to the larger internal registers.
 
 - I get an error when I choose a real Quantum computer.<br>
 You must choose a quantum computer that meets the minimum requirements, all instructions executed using method 1 require 5 qubits whereas all instructions using method 2 require 32 qubits.
