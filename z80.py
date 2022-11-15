@@ -3438,7 +3438,7 @@ class z80:
                  
                 if self.opcode == "11011010": #DA = JP C,nn
                     addr = self.conditionalSetPC(self.operand2 + self.operand1,self.F[7])
-                    
+
                     if addr != False: self.PC = int(addr,2)
                     else: self.PC = self.PC + 1
                     

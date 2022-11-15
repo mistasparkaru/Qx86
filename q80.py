@@ -35,8 +35,9 @@ class q80(z80):
     #QuantumExecute = "AND2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "OR1" #Quantum method 1 - In silicon method (Very slow)
     #QuantumExecute = "OR2" #Quantum method 2 - Entirely in the quantum domain
-    #QuantumExecute = "LOAD1" #Quantum method 1 - Direct load from Qubits (Note, loading is included as parts of PUSH, POP, CALL,RET, etc)
-    #QuantumExecute = "LOAD2" #Quantum method 2 - In silicon method (Note, loading is included as parts of PUSH, POP, CALL,RET, etc) 
+    #QuantumExecute = "LOAD1" #Quantum method 1 - Direct load from Qubits (Note, loading is included as parts of PUSH, POP, CALL,RET, etc... INCLUDING ***HALT***)
+    #QuantumExecute = "LOAD2" #Quantum method 2 - In silicon method (Note, loading is included as parts of PUSH, POP, CALL,RET, etc... INCLUDING ***HALT***) 
+    #QuantumExecute = "LOAD3" #Quantum method 3 - Load using Hadamard gates to entanlgle the source and destination bits (Note, loading is included as parts of PUSH, POP, CALL,RET, etc... INCLUDING ***HALT***) 
     #QuantumExecute = "ADD1" #Quantum method 1 - In silicon method (Very slow)
     #QuantumExecute = "ADD2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "SUB1" #Quantum method 1 - In silicon method (Very slow)
@@ -1798,6 +1799,326 @@ c: 29/════════════════════════�
 
         return str(int(qubit26)) + str(int(qubit19)) + str(int(qubit12)) + str(int(qubit5))
 
+    def myQuantum1BitHadamardLatch(self,input):
+        """
+      ┌───────┐┌───┐     ┌─┐
+ q_0: ┤ Ry(0) ├┤ H ├──■──┤M├────
+      ├───────┤└───┘┌─┴─┐└╥┘┌─┐
+ q_1: ┤ Ry(0) ├─────┤ X ├─╫─┤M├─
+      └───────┘     └───┘ ║ └╥┘  
+c: 2/ ════════════════════╩══╩══
+        """    
+        inputA0 = int(input) * math.pi
+        
+      
+        circuit = q.QuantumCircuit(2,2)
+        
+        
+        #Bit 0
+        circuit.ry(inputA0,0)
+        circuit.ry(inputA0,1)
+        circuit.h(0)
+        circuit.cx(0,1)
+
+        
+        circuit.measure(0,0)
+        circuit.measure(1,1) 
+        
+        print(circuit)
+
+        shots = 2000
+        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
+        job_monitor(job)
+        result = job.result()
+
+        memory = result.get_memory(circuit)
+
+        
+        output0 = 0
+       
+        for result in memory:
+        
+        
+                output0 = output0 + int(bool(int(result[1])) ^ bool(int(result[0])))
+
+
+        output0 = output0/shots        
+     
+
+        return str(int(output0))
+
+    def myQuantum4BitHadamardLatch(self,input):
+        """
+      ┌───────┐┌───┐     ┌─┐
+ q_0: ┤ Ry(0) ├┤ H ├──■──┤M├─────────────────────
+      ├───────┤└───┘┌─┴─┐└╥┘┌─┐
+ q_1: ┤ Ry(0) ├─────┤ X ├─╫─┤M├──────────────────
+      ├───────┤┌───┐└───┘ ║ └╥┘┌─┐
+ q_2: ┤ Ry(π) ├┤ H ├──■───╫──╫─┤M├───────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║ └╥┘┌─┐
+ q_3: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫─┤M├────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║ └╥┘┌─┐
+ q_4: ┤ Ry(0) ├┤ H ├──■───╫──╫──╫──╫─┤M├─────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║ └╥┘┌─┐
+ q_5: ┤ Ry(0) ├─────┤ X ├─╫──╫──╫──╫──╫─┤M├──────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_6: ┤ Ry(π) ├┤ H ├──■───╫──╫──╫──╫──╫──╫─┤M├───
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_7: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫─┤M├
+      └───────┘     └───┘ ║  ║  ║  ║  ║  ║  ║ └╥┘  
+c: 8/ ════════════════════╩══╩══╩══╩══╩══╩══╩══╩═
+        """    
+        reset = 0
+        inputA0 = int(input[3]) * math.pi
+        inputA1 = int(input[2]) * math.pi
+        inputA2 = int(input[1]) * math.pi
+        inputA3 = int(input[0]) * math.pi
+
+        
+        
+        circuit = q.QuantumCircuit(8,8)
+        
+        
+        #Bit 0
+        circuit.ry(inputA0,0)
+        circuit.ry(inputA0,1)
+        circuit.h(0)
+        circuit.cx(0,1)
+
+        #Bit 1
+        circuit.ry(inputA1,2)
+        circuit.ry(inputA1,3)
+        circuit.h(2)
+        circuit.cx(2,3)
+
+        #Bit 2
+        circuit.ry(inputA2,4)
+        circuit.ry(inputA2,5)
+        circuit.h(4)
+        circuit.cx(4,5)
+
+        #Bit 3
+        circuit.ry(inputA3,6)
+        circuit.ry(inputA3,7)
+        circuit.h(6)
+        circuit.cx(6,7)
+
+
+  
+
+        circuit.measure(0,0)
+        circuit.measure(1,1) 
+        circuit.measure(2,2)
+        circuit.measure(3,3) 
+        circuit.measure(4,4)
+        circuit.measure(5,5)
+        circuit.measure(6,6) 
+        circuit.measure(7,7)
+
+
+        
+        
+        print(circuit)
+
+        shots = 2000
+        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
+        job_monitor(job)
+        result = job.result()
+
+        memory = result.get_memory(circuit)
+
+        
+        output0 = 0
+        output1 = 0
+        output2 = 0
+        output3 = 0
+
+
+
+        
+        for result in memory:
+        
+        
+                output0 = output0 + int(bool(int(result[7])) ^ bool(int(result[6])))
+                output1 = output1 + int(bool(int(result[5])) ^ bool(int(result[4])))
+                output2 = output2 + int(bool(int(result[3])) ^ bool(int(result[2])))
+                output3 = output3 + int(bool(int(result[1])) ^ bool(int(result[0])))
+
+        output0 = output0/shots        
+        output1 = output1/shots        
+        output2 = output2/shots        
+        output3 = output3/shots        
+
+        return str(int(output3)) + str(int(output2)) + str(int(output1)) + str(int(output0))
+
+    def myQuantum8BitHadamardLatch(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0):
+        """
+      ┌───────┐┌───┐     ┌─┐
+ q_0: ┤ Ry(0) ├┤ H ├──■──┤M├─────────────────────────────────────────────
+      ├───────┤└───┘┌─┴─┐└╥┘┌─┐
+ q_1: ┤ Ry(0) ├─────┤ X ├─╫─┤M├──────────────────────────────────────────
+      ├───────┤┌───┐└───┘ ║ └╥┘┌─┐
+ q_2: ┤ Ry(π) ├┤ H ├──■───╫──╫─┤M├───────────────────────────────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║ └╥┘┌─┐
+ q_3: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫─┤M├────────────────────────────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║ └╥┘┌─┐
+ q_4: ┤ Ry(0) ├┤ H ├──■───╫──╫──╫──╫─┤M├─────────────────────────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║ └╥┘┌─┐
+ q_5: ┤ Ry(0) ├─────┤ X ├─╫──╫──╫──╫──╫─┤M├──────────────────────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_6: ┤ Ry(π) ├┤ H ├──■───╫──╫──╫──╫──╫──╫─┤M├───────────────────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_7: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫─┤M├────────────────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_8: ┤ Ry(0) ├┤ H ├──■───╫──╫──╫──╫──╫──╫──╫──╫─┤M├─────────────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+ q_9: ┤ Ry(0) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├──────────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_10: ┤ Ry(π) ├┤ H ├──■───╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├───────────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_11: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├────────────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_12: ┤ Ry(0) ├┤ H ├──■───╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├─────────
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_13: ┤ Ry(0) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├──────
+      ├───────┤┌───┐└───┘ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_14: ┤ Ry(π) ├┤ H ├──■───╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├───
+      ├───────┤└───┘┌─┴─┐ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘┌─┐
+q_15: ┤ Ry(π) ├─────┤ X ├─╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫──╫─┤M├
+      └───────┘     └───┘ ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║  ║ └╥┘
+c: 16/════════════════════╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩══╩═
+        """    
+        reset = 0
+        inputA0 = int(inputA0) * math.pi
+        inputA1 = int(inputA1) * math.pi
+        inputA2 = int(inputA2) * math.pi
+        inputA3 = int(inputA3) * math.pi
+        inputA4 = int(inputA4) * math.pi
+        inputA5 = int(inputA5) * math.pi
+        inputA6 = int(inputA6) * math.pi
+        inputA7 = int(inputA7) * math.pi
+        
+        
+        circuit = q.QuantumCircuit(16,16)
+        
+        
+        #Bit 0
+        circuit.ry(inputA0,0)
+        circuit.ry(inputA0,1)
+        circuit.h(0)
+        circuit.cx(0,1)
+
+        #Bit 1
+        circuit.ry(inputA1,2)
+        circuit.ry(inputA1,3)
+        circuit.h(2)
+        circuit.cx(2,3)
+
+        #Bit 2
+        circuit.ry(inputA2,4)
+        circuit.ry(inputA2,5)
+        circuit.h(4)
+        circuit.cx(4,5)
+
+        #Bit 3
+        circuit.ry(inputA3,6)
+        circuit.ry(inputA3,7)
+        circuit.h(6)
+        circuit.cx(6,7)
+
+        #Bit 4
+        circuit.ry(inputA4,8)
+        circuit.ry(inputA4,9)
+        circuit.h(8)
+        circuit.cx(8,9)
+
+        #Bit 5
+        circuit.ry(inputA5,10)
+        circuit.ry(inputA5,11)
+        circuit.h(10)
+        circuit.cx(10,11)
+
+        #Bit 6
+        circuit.ry(inputA6,12)
+        circuit.ry(inputA6,13)
+        circuit.h(12)
+        circuit.cx(12,13)
+
+        #Bit 7
+        circuit.ry(inputA7,14)
+        circuit.ry(inputA7,15)        
+        circuit.h(14)
+        circuit.cx(14,15)
+  
+
+        circuit.measure(0,0)
+        circuit.measure(1,1) 
+        circuit.measure(2,2)
+        circuit.measure(3,3) 
+        circuit.measure(4,4)
+        circuit.measure(5,5)
+        circuit.measure(6,6) 
+        circuit.measure(7,7)
+        circuit.measure(8,8)
+        circuit.measure(9,9) 
+        circuit.measure(10,10)
+        circuit.measure(11,11)
+        circuit.measure(12,12)
+        circuit.measure(13,13)
+        circuit.measure(14,14)
+        circuit.measure(15,15)
+
+        
+        
+        print(circuit)
+
+        shots = 2000
+        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
+        job_monitor(job)
+        result = job.result()
+
+        memory = result.get_memory(circuit)
+
+        
+        output0 = 0
+        output1 = 0
+        output2 = 0
+        output3 = 0
+        output4 = 0
+        output5 = 0
+        output6 = 0
+        output7 = 0
+
+
+        
+        for result in memory:
+        
+        
+                output0 = output0 + int(bool(int(result[15])) ^ bool(int(result[14])))
+                output1 = output1 + int(bool(int(result[13])) ^ bool(int(result[12])))
+                output2 = output2 + int(bool(int(result[11])) ^ bool(int(result[10])))
+                output3 = output3 + int(bool(int(result[9])) ^ bool(int(result[8])))
+                output4 = output4 + int(bool(int(result[7])) ^ bool(int(result[6])))
+                output5 = output5 + int(bool(int(result[5])) ^ bool(int(result[4])))
+                output6 = output6 + int(bool(int(result[3])) ^ bool(int(result[2])))
+                output7 = output7 + int(bool(int(result[1])) ^ bool(int(result[0])))
+                
+                
+
+        
+
+        output0 = output0/shots        
+        output1 = output1/shots        
+        output2 = output2/shots        
+        output3 = output3/shots        
+        output4 = output4/shots        
+        output5 = output5/shots        
+        output6 = output6/shots        
+        output7 = output7/shots        
+        
+ 
+        return str(int(output7)) + str(int(output6)) + str(int(output5)) + str(int(output4)) + str(int(output3)) + str(int(output2)) + str(int(output1)) + str(int(output0))
+
     def myQuantum1BitLatch(self,input):
         """
      ┌───────┐     ┌───┐     ┌───┐                                              ░ ┌─┐
@@ -3370,7 +3691,7 @@ c: 25/════════════════════════�
     def eightbitld(self,register1,register2):
 
 
-        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2":
+        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
             self.debugline = "Traditional method"
 
             if self.preopcode == "11011101" and self.opcode == "01100000": self.IX = register2 + self.IX[8:16]
@@ -3746,8 +4067,136 @@ c: 25/════════════════════════�
             #No flags effected
             return register1
 
+        if self.QuantumExecute == "LOAD3":
+            self.debugline = "Quantum method 3"
+            if self.preopcode == "11011101" and self.opcode == "01100000": self.IX = register2 + self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100000": self.IY = register2 + self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+            if self.preopcode == "11011101" and self.opcode == "01100001": self.IX = register2 + self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100001": self.IY = register2 + self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+            if self.preopcode == "11011101" and self.opcode == "01100010": self.IX = register2 + self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100010": self.IY = register2 + self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+            if self.preopcode == "11011101" and self.opcode == "01100011": self.IX = register2 + self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100011": self.IY = register2 + self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+            if self.preopcode == "11011101" and self.opcode == "01100111": self.IX = register2 + self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100111": self.IY = register2 + self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+
+            if self.preopcode == "11011101" and self.opcode == "01101000": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) + register2
+            if self.preopcode == "11111101" and self.opcode == "01101000": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) + register2
+            if self.preopcode == "11011101" and self.opcode == "01101001": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) + register2
+            if self.preopcode == "11111101" and self.opcode == "01101001": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) + register2
+            if self.preopcode == "11011101" and self.opcode == "01101010": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) + register2
+            if self.preopcode == "11111101" and self.opcode == "01101010": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) + register2
+            if self.preopcode == "11011101" and self.opcode == "01101011": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) + register2
+            if self.preopcode == "11111101" and self.opcode == "01101011": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) + register2
+            if self.preopcode == "11011101" and self.opcode == "01101111": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) + register2
+            if self.preopcode == "11111101" and self.opcode == "01101111": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) + register2
+
+            if self.preopcode == "11011101" and self.opcode == "01000100": self.B = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000100": self.B = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) 
+            if self.preopcode == "11011101" and self.opcode == "01000101": self.B = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01000101": self.B = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16]) 
+
+            if self.preopcode == "11011101" and self.opcode == "01010100": self.D = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010100": self.D = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) 
+            if self.preopcode == "11011101" and self.opcode == "01010101": self.D = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01010101": self.D = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+
+            if self.preopcode == "11011101" and self.opcode == "01001100": self.C = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001100": self.C = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) 
+            if self.preopcode == "11011101" and self.opcode == "01001101": self.C = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01001101": self.C = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+
+            if self.preopcode == "11011101" and self.opcode == "01111100": self.A = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111100": self.A = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8])#self.IY[0:8]
+            if self.preopcode == "11011101" and self.opcode == "01111101": self.A = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])#self.IX[8:16]
+            if self.preopcode == "11111101" and self.opcode == "01111101": self.A = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])#self.IY[8:16]
+
+            if self.preopcode == "11011101" and self.opcode == "01011100": self.E = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) 
+            if self.preopcode == "11111101" and self.opcode == "01011100": self.E = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) 
+            if self.preopcode == "11011101" and self.opcode == "01011101": self.E = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16]) 
+            if self.preopcode == "11111101" and self.opcode == "01011101": self.E = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16]) 
+
+            if self.preopcode == "11011101" and self.opcode == "01101100": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) +  self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01101100": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) +  self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01100101": self.IX = self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16]) +  self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100101": self.IY = self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16]) +  self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+
+            if self.preopcode == "11011101" and self.opcode == "01000000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01000001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01000010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01000011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01010000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01010001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01010010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01010011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01000111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01000111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01001000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01001001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01001010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01001011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01001111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01001111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01010111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01010111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01011000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01011000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01011001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01011001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01011010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01011010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01011011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01011011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01011111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01011111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01111000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111000": register1 = self.myQuantum4BitHadamardLatch(self.B[0:4]) + self.myQuantum4BitHadamardLatch(self.B[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01111001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111001": register1 = self.myQuantum4BitHadamardLatch(self.C[0:4]) + self.myQuantum4BitHadamardLatch(self.C[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01111010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111010": register1 = self.myQuantum4BitHadamardLatch(self.D[0:4]) + self.myQuantum4BitHadamardLatch(self.D[4:8])
+            if self.preopcode == "11011101" and self.opcode == "01111011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111011": register1 = self.myQuantum4BitHadamardLatch(self.E[0:4]) + self.myQuantum4BitHadamardLatch(self.E[4:8])
+
+            if self.preopcode == "11011101" and self.opcode == "01111111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+            if self.preopcode == "11111101" and self.opcode == "01111111": register1 = self.myQuantum4BitHadamardLatch(self.A[0:4]) + self.myQuantum4BitHadamardLatch(self.A[4:8])
+ 
+            if self.preopcode == "11011101" and self.opcode == "01100100": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) +  self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01100100": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) +  self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+            if self.preopcode == "11011101" and self.opcode == "01101101": self.IX = self.myQuantum4BitHadamardLatch(self.IX[0:4]) + self.myQuantum4BitHadamardLatch(self.IX[4:8]) +  self.myQuantum4BitHadamardLatch(self.IX[8:12]) + self.myQuantum4BitHadamardLatch(self.IX[12:16])
+            if self.preopcode == "11111101" and self.opcode == "01101101": self.IY = self.myQuantum4BitHadamardLatch(self.IY[0:4]) + self.myQuantum4BitHadamardLatch(self.IY[4:8]) +  self.myQuantum4BitHadamardLatch(self.IY[8:12]) + self.myQuantum4BitHadamardLatch(self.IY[12:16])
+
+            if self.preopcode == "":
+                register1 = self.myQuantum4BitHadamardLatch(register2[0:4]) + self.myQuantum4BitHadamardLatch(register2[4:8])
+
+            self.clearop()
+            self.delay = 1
+            #No flags effected
+            return register1
+
     def conditionalSetPC(self,addr,condition):
-        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2":
+        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
             self.debugline = "Traditional method"
             if condition == "1": return addr
             else: return False
@@ -3759,7 +4208,11 @@ c: 25/════════════════════════�
             self.debugline = "Quantum method 2"
             if self.myif(condition) == 1: return self.myQuantum4BitLatch(addr[0] + addr[1] + addr[2] + addr[3]) + self.myQuantum4BitLatch(addr[4] + addr[5] + addr[6] + addr[7]) + self.myQuantum4BitLatch(addr[8] + addr[9] + addr[10] + addr[11]) + self.myQuantum4BitLatch(addr[12] + addr[13] + addr[14] + addr[15])
             else: return False
-            
+        if self.QuantumExecute == "LOAD3":
+            self.debugline = "Quantum method 3"
+            if self.myif(condition) == 1: return self.myQuantum8BitHadamardLatch(addr[0],addr[1],addr[2],addr[3],addr[4],addr[5],addr[6],addr[7]) + self.myQuantum8BitHadamardLatch(addr[8],addr[9],addr[10],addr[11],addr[12],addr[13],addr[14],addr[15])
+            else: return False 
+			
     def eightbitadd(self,register):
         A = int(self.A,2)
         B = int(register,2)
@@ -5792,7 +6245,7 @@ c: 25/════════════════════════�
             self.F = self.F[0] + self.F[1] + self.F[2] + "0" + self.F[4] + self.F[5] + "0" + str(self.myQuantum1BitLatch(1))
 
     def singleload(self,bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7):
-        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2":
+        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
             self.debugline = "Traditional method"
             return bit0 + bit1 + bit2 + bit3 + bit4 + bit5 + bit6 + bit7
             
@@ -5804,8 +6257,12 @@ c: 25/════════════════════════�
             self.debugline = "Quantum method 2"
             return self.myQuantum4BitLatch(bit0 + bit1 + bit2 + bit3) + self.myQuantum4BitLatch(bit4 + bit5 + bit6 + bit7)            
 
+        if self.QuantumExecute == "LOAD3":
+            self.debugline = "Quantum method 3"
+            return self.myQuantum8BitHadamardLatch(bit0, bit1, bit2, bit3, bit4, bit5, bit6, bit7)            
+
     def loadhlr(self,data,original):
-        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2":
+        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
             self.debugline = "Traditional method"
             if self.preopcode == "":
                 if self.stage == "1":
@@ -5977,6 +6434,67 @@ c: 25/════════════════════════�
                     self.prejumppc = self.PC
                     self.PC = self.PC + 1
                     return original
+					
+        if self.QuantumExecute == "LOAD3":
+            self.debugline = "Quantum method 3"
+            
+            if self.preopcode == "":
+                if self.stage == "1":
+                    stage = ""
+                    self.delay = 1
+                    self.needmorebits = False
+                    self.execute = True
+                    #register = data
+                    register = self.myQuantum4BitHadamardLatch(data[0] + data[1] + data[2] + data[3]) + self.myQuantum4BitHadamardLatch(data[4] + data[5] + data[6] + data[7])
+
+                    self.PC = self.prejumppc + 1
+                    self.instructionname = "LD R,(HL) (" + data + ")"
+                    return register
+
+                if self.stage == "":
+                    self.stage = "1"
+                    self.delay = 3
+
+                    hl = int(self.H + self.L,2)
+                    self.prejumppc = self.PC
+                    self.PC = hl
+                    self.instructionname = "LD R,(HL) (" + data  + ")"
+                    return original
+            else:
+                self.instructionname = "LD R,(IXY + d)"
+                if self.stage == "3":
+                    self.delay = 1
+                    self.needmorebits = False
+                    self.execute = True
+                    self.PC = self.prejumppc + 2
+                    register = self.myQuantum4BitHadamardLatch(data[0] + data[1] + data[2] + data[3]) + self.myQuantum4BitHadamardLatch(data[4] + data[5] + data[6] + data[7])
+                    return register
+
+                if self.stage == "2":
+                    self.stage = "3"
+                    self.delay = 3
+
+                    if self.preopcode == "11011101":
+                        if data[0] == "1": self.PC = int(self.IX,2) - (128 - int(data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7],2))
+                        if data[0] == "0": self.PC = int(self.IX,2) +  int(data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7],2)
+                    if self.preopcode == "11111101":
+                        if data[0] == "1": self.PC = int(self.IY,2) - (128 - int(data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7],2))
+                        if data[0] == "0": self.PC = int(self.IY,2) +  int(data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7],2)
+
+                    return original
+
+                if self.stage == "1":
+                    self.stage = "2"
+                    self.delay = 4
+                    return original
+
+                if self.stage == "":
+                    self.stage = "1"
+                    self.delay = 4
+                    self.prejumppc = self.PC
+                    self.PC = self.PC + 1
+                    return original
+
 
     def eightbitcp(self,register):
         if self.QuantumExecute != "CP1" and self.QuantumExecute != "CP2":
@@ -6144,7 +6662,7 @@ c: 25/════════════════════════�
             self.delay =  1
 
     def setBoolValue(self,value):
-        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2":
+        if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
             self.debugline = "Traditional method"
             return value
         if self.QuantumExecute == "LOAD1":
@@ -6153,7 +6671,9 @@ c: 25/════════════════════════�
         if self.QuantumExecute == "LOAD2":
             self.debugline = "Quantum method 2"
             return bool(int(self.myQuantum1BitLatch(value)))
-   
+        if self.QuantumExecute == "LOAD3":
+            self.debugline = "Quantum method 3"
+            return bool(int(self.myQuantum1BitHadamardLatch(value)))   
     def setPC(self,addr):
         if self.QuantumExecute != "SetPC1" and self.QuantumExecute != "SetPC2":
             self.debugline = "Traditional method"
