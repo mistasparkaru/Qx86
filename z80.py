@@ -4538,7 +4538,7 @@ class z80:
         #Set flags
         H = "0"
         P = "0"
-        N = self.F[6]
+        N = "0"
         C = self.F[7]
         if register  == "10000000": P = "1"
         if register[7] == "0" and register[6] == "0" and register[5] == "0" and register[4] == "0": H = "1"

@@ -86,7 +86,7 @@ def resetram():
 
 
         #increment
-        qpu.QuantumExecute = "INC2"
+        qpu.QuantumExecute = "INC3"
         eRAM[0] = opcodetoram("3e") #LOAD A,
         eRAM[1] = opcodetoram("07") #with 07
         eRAM[2] = opcodetoram("3c") #INC A
@@ -100,7 +100,7 @@ def resetram():
         #eRAM[3] = opcodetoram("76") #Halt
 
         #add
-        #qpu.QuantumExecute = "ADD2"
+        #qpu.QuantumExecute = "ADD3"
         #eRAM[0] = opcodetoram("3e") #LOAD A,
         #eRAM[1] = opcodetoram("02") #with 02
         #eRAM[3] = opcodetoram("06") #LOAD B,
@@ -169,9 +169,9 @@ def resetram():
         #eRAM[4] = opcodetoram("76") #Halt
 
         #load
-        #qpu.QuantumExecute = "LOAD2"
-        #eRAM[0] = opcodetoram("3e") #LOAD A,
-        #eRAM[1] = opcodetoram("26") #with 26
+        #qpu.QuantumExecute = "LOAD3"
+        #eRAM[0] = opcodetoram("fb") #LOAD A,
+        #eRAM[1] = opcodetoram("f3") #with 26
         #eRAM[2] = opcodetoram("76") #Halt
  
         #PUSH
@@ -208,7 +208,7 @@ def resetram():
         #eRAM[4] = opcodetoram("76") #Halt
           
         #Jump if
-        #qpu.QuantumExecute = "LOAD2"
+        #qpu.QuantumExecute = "LOAD3"
         #eRAM[0] = opcodetoram("37") #SCF
         #eRAM[1] = opcodetoram("da") #JP C,xx
         #eRAM[2] = opcodetoram("0a") #Jump to xx0a
@@ -217,12 +217,12 @@ def resetram():
         #eRAM[15] = opcodetoram("76") #Halt
         
         #CP
-        #qpu.QuantumExecute = "CP2"
+        #qpu.QuantumExecute = "CP3"
         #eRAM[0] = opcodetoram("3e") #LOAD A,
         #eRAM[1] = opcodetoram("07") #with 07
         #eRAM[2] = opcodetoram("06") #LOAD B,
         #eRAM[3] = opcodetoram("07") #with 07
-        #eRAM[4] = opcodetoram("bf") #CP A,B
+        #eRAM[4] = opcodetoram("b8") #CP A,B
         #eRAM[5] = opcodetoram("76") #Halt
 
  
