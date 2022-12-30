@@ -52,6 +52,7 @@ class q80(z80):
     #QuantumExecute = "NEG2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "ROT1" #Quantum method 1 - Direct load from Qubits
     #QuantumExecute = "ROT2" #Quantum method 2 - In silicon method 
+    #QuantumExecute = "ROT3" #Quantum method 3 - Quantum swap gate method 
     #QuantumExecute = "SCF1" #Quantum method 1 - Direct load from Qubits
     #QuantumExecute = "SCF2" #Quantum method 2 - In silicon method 
     #QuantumExecute = "CP1" #Quantum method 1 - In silicon method (Very slow)
@@ -7163,7 +7164,7 @@ c: 16/════════════════════════�
             return int(sub)
     
     def rotate(self,bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7):
-        if self.QuantumExecute != "ROT1" and self.QuantumExecute != "ROT2":
+        if self.QuantumExecute != "ROT1" and self.QuantumExecute != "ROT2" and self.QuantumExecute != "ROT3":
             self.debugline = "Traditional method"
             return bit0 + bit1 + bit2 + bit3 + bit4 + bit5 + bit6 + bit7
             
@@ -7174,6 +7175,12 @@ c: 16/════════════════════════�
         if self.QuantumExecute == "ROT2":
             self.debugline = "Quantum method 2"
             return self.myQuantum4BitLatch(bit0 + bit1 + bit2 + bit3) + self.myQuantum4BitLatch(bit4 + bit5 + bit6 + bit7)
+
+        if self.QuantumExecute == "ROT3":
+            self.debugline = "Quantum method 3"
+            temp =  self.myQuantumSwap(bit0, bit1, bit2, bit3, bit4, bit5, bit6, bit7,0,0,0,0,0,0,0,0)
+            
+            return temp[8] + temp[9] + temp[10] + temp[11] + temp[12] + temp[13] + temp[14] + temp[15]
     
     def scf(self):
         if self.QuantumExecute != "SCF1" and self.QuantumExecute != "SCF2":
