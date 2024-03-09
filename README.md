@@ -27,7 +27,7 @@ https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=ms
 
 3. Install IBMs Qiskit using the following command
 ```
-python.exe -m pip install qiskit
+python.exe -m pip install qiskit==0.39.2
 ```
 
 4. Install matplotlib and curses 
