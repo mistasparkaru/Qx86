@@ -86,12 +86,12 @@ def resetram():
 
 
         #increment
-        #qpu.QuantumExecute = "INC3"
-        #eRAM[0] = opcodetoram("3e") #LOAD A,
-        #eRAM[1] = opcodetoram("04") #with 04
-        #eRAM[2] = opcodetoram("3c") #INC A
-        #eRAM[3] = opcodetoram("f5") #PUSH AF
-        #eRAM[4] = opcodetoram("76") #Halt
+        #qpu.QuantumExecute = "INC1"
+        eRAM[0] = opcodetoram("3e") #LOAD A,
+        eRAM[1] = opcodetoram("04") #with 04
+        eRAM[2] = opcodetoram("3c") #INC A
+        eRAM[3] = opcodetoram("f5") #PUSH AF
+        eRAM[4] = opcodetoram("76") #Halt
         
         #neg
         #qpu.QuantumExecute = "none"
@@ -218,13 +218,13 @@ def resetram():
         #eRAM[9] = opcodetoram("76") #Halt
 		
 		#Bit
-        qpu.QuantumExecute = "SetResBit1"
-        eRAM[0] = opcodetoram("3e") #LOAD A,
-        eRAM[1] = opcodetoram("ff") #with ff
-        eRAM[2] = opcodetoram("cb") #Goto CB opcodes
-        eRAM[3] = opcodetoram("87") #BIT A,0
-        eRAM[4] = opcodetoram("F5") #PUSH AF
-        eRAM[5] = opcodetoram("76") #Halt
+        #qpu.QuantumExecute = "SetResBit1"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("ff") #with ff
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("87") #BIT A,0
+        #eRAM[4] = opcodetoram("F5") #PUSH AF
+        #eRAM[5] = opcodetoram("76") #Halt
 
         #SET DI
         #qpu.QuantumExecute = "LOAD3"
