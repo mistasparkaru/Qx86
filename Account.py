@@ -1,2 +1,5 @@
-from qiskit import IBMQ
-IBMQ.save_account('11111111111111111111111111111111111111111111111111111111111111111')
+from qiskit_ibm_runtime import QiskitRuntimeService
+
+QiskitRuntimeService.save_account(channel="ibm_quantum", token="XXXXXXXXXX", overwrite= True)
+ 
+service = QiskitRuntimeService() 
