@@ -218,19 +218,24 @@ def resetram():
         #eRAM[9] = opcodetoram("76") #Halt
 		
 		#Bit
-        #qpu.QuantumExecute = "SetResBit2"
-        #eRAM[0] = opcodetoram("3e") #LOAD A,
-        #eRAM[1] = opcodetoram("ff") #with ff
-        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
-        #eRAM[3] = opcodetoram("47") #BIT A,0
-        #eRAM[4] = opcodetoram("F5") #PUSH AF
-        #eRAM[5] = opcodetoram("76") #Halt
+        qpu.QuantumExecute = "SetResBit1"
+        eRAM[0] = opcodetoram("3e") #LOAD A,
+        eRAM[1] = opcodetoram("ff") #with ff
+        eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        eRAM[3] = opcodetoram("87") #BIT A,0
+        eRAM[4] = opcodetoram("F5") #PUSH AF
+        eRAM[5] = opcodetoram("76") #Halt
 
+        #SET DI
+        #qpu.QuantumExecute = "LOAD3"
+        #eRAM[0] = opcodetoram("f3") #LOAD A,
+        
         #load
-        #qpu.QuantumExecute = "LOAD4"
+        #qpu.QuantumExecute = "LOAD3"
         #eRAM[0] = opcodetoram("3e") #LOAD A,
         #eRAM[1] = opcodetoram("26") #with 26
         #eRAM[2] = opcodetoram("76") #Halt
+
  
         #PUSH
         #qpu.QuantumExecute = "AddrBus2" #Or
@@ -248,12 +253,12 @@ def resetram():
         #eRAM[2] = opcodetoram("76") #Halt
 
         #Rotate
-        qpu.QuantumExecute = "ROT2"
-        eRAM[0] = opcodetoram("3e") #LOAD A,
-        eRAM[1] = opcodetoram("7f") #with 7f
-        eRAM[2] = opcodetoram("cb") #Goto CB opcodes
-        eRAM[3] = opcodetoram("27") #SLA A (slew left/rotate)
-        eRAM[4] = opcodetoram("76") #Halt
+        #qpu.QuantumExecute = "ROT2"
+        #eRAM[0] = opcodetoram("3e") #LOAD A,
+        #eRAM[1] = opcodetoram("7f") #with 7f
+        #eRAM[2] = opcodetoram("cb") #Goto CB opcodes
+        #eRAM[3] = opcodetoram("27") #SLA A (slew left/rotate)
+        #eRAM[4] = opcodetoram("76") #Halt
        
         #DAA
         #qpu.QuantumExecute = "SUB2" #Or

@@ -1962,6 +1962,7 @@ c: 2/ ════════════════════╩══╩�
         circuit.measure_all()
         
         print(circuit)
+        print("1 bit Hadamard latch")
 
         shots = self.shots
         pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
@@ -2015,7 +2016,7 @@ c: 8/ ════════════════════╩══╩�
 
         
         
-        circuit = q.QuantumCircuit(8,8)
+        circuit = QuantumCircuit(8,8)
         
         
         #Bit 0
@@ -2045,26 +2046,21 @@ c: 8/ ════════════════════╩══╩�
 
   
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
+        circuit.measure_all()
 
 
         
-        
+        print("4 bit Hadamard Latch")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         
         output0 = 0
@@ -2088,7 +2084,7 @@ c: 8/ ════════════════════╩══╩�
         output2 = output2/shots        
         output3 = output3/shots        
 
-        return str(int(output3)) + str(int(output2)) + str(int(output1)) + str(int(output0))
+        return str(round(output3)) + str(round(output2)) + str(round(output1)) + str(round(output0))
 
     def myQuantum8BitHadamardLatch(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0):
         """
@@ -2271,7 +2267,7 @@ c: 8/═════════════════════════
         input = int(input) * math.pi
 
 
-        circuit = q.QuantumCircuit(8,8)
+        circuit = QuantumCircuit(8,8)
         #Bit 0
         circuit.ry(input,0)
         circuit.ry(enable,1)
@@ -2303,24 +2299,19 @@ c: 8/═════════════════════════
         
  
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
+        circuit.measure_all()
         
         print("Quantum latch circuit")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -6012,14 +6003,14 @@ c: 16/════════════════════════�
                     notbit = str(int(notbit))
                     self.F = "0" + notbit + self.F[2] + "1" + self.F[4] + "0"  + "0" + self.F[7]
 
-                if self.opx == 8:  register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + str(self.mysetbit(0))
-                if self.opx == 9:  register = register[0] + register[1] + register[2] + register[3] + register[4] + str(self.mysetbit(0)) + register[6] + register[7]
-                if self.opx == 10: register = register[0] + register[1] + register[2] + str(self.mysetbit(0)) + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 11: register = register[0] + str(self.mysetbit(0)) + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 12: register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + str(self.mysetbit(1))
-                if self.opx == 13: register = register[0] + register[1] + register[2] + register[3] + register[4] + str(self.mysetbit(1)) + register[6] + register[7]
-                if self.opx == 14: register = register[0] + register[1] + register[2] + str(self.mysetbit(1)) + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 15: register = register[0] + str(self.mysetbit(1)) + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 8:  register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + str(self.setbit(0))
+                if self.opx == 9:  register = register[0] + register[1] + register[2] + register[3] + register[4] + str(self.setbit(0)) + register[6] + register[7]
+                if self.opx == 10: register = register[0] + register[1] + register[2] + str(self.setbit(0)) + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 11: register = register[0] + str(self.setbit(0)) + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 12: register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + str(self.setbit(1))
+                if self.opx == 13: register = register[0] + register[1] + register[2] + register[3] + register[4] + str(self.setbit(1)) + register[6] + register[7]
+                if self.opx == 14: register = register[0] + register[1] + register[2] + str(self.setbit(1)) + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 15: register = register[0] + str(self.setbit(1)) + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
 
                 if self.opx == 3:
                     temp = register
@@ -6064,14 +6055,14 @@ c: 16/════════════════════════�
                     notbit = str(int(notbit))
                     self.F = "0" + notbit + self.F[2] + "1" + self.F[4] + "0"  + "0" + self.F[7]
 
-                if self.opx == 8:  register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + str(self.mysetbit(0)) + register[7]
-                if self.opx == 9:  register = register[0] + register[1] + register[2] + register[3] + str(self.mysetbit(0)) + register[5] + register[6] + register[7]
-                if self.opx == 10: register = register[0] + register[1] + str(self.mysetbit(0)) + register[3] + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 11: register = str(self.mysetbit(0)) + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 12: register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + str(self.mysetbit(1)) + register[7]
-                if self.opx == 13: register = register[0] + register[1] + register[2] + register[3] + str(self.mysetbit(1)) + register[5] + register[6] + register[7]
-                if self.opx == 14: register = register[0] + register[1] + str(self.mysetbit(1)) + register[3] + register[4] + register[5] + register[6] + register[7]
-                if self.opx == 15: register = str(self.mysetbit(1)) + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 8:  register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + str(self.setbit(0)) + register[7]
+                if self.opx == 9:  register = register[0] + register[1] + register[2] + register[3] + str(self.setbit(0)) + register[5] + register[6] + register[7]
+                if self.opx == 10: register = register[0] + register[1] + str(self.setbit(0)) + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 11: register = str(self.setbit(0)) + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 12: register = register[0] + register[1] + register[2] + register[3] + register[4] + register[5] + str(self.setbit(1)) + register[7]
+                if self.opx == 13: register = register[0] + register[1] + register[2] + register[3] + str(self.setbit(1)) + register[5] + register[6] + register[7]
+                if self.opx == 14: register = register[0] + register[1] + str(self.setbit(1)) + register[3] + register[4] + register[5] + register[6] + register[7]
+                if self.opx == 15: register = str(self.setbit(1)) + register[1] + register[2] + register[3] + register[4] + register[5] + register[6] + register[7]
 
                 if self.opx == 3:
                     C = register[7]
@@ -7580,17 +7571,20 @@ c: 16/════════════════════════�
     def setbit(self,bit):
         inputA = bit * math.pi
 
-        circuit = q.QuantumCircuit(1,1)
+        circuit = QuantumCircuit(1,1)
         circuit.ry(inputA,0)
-        circuit.measure(0,0)
+        circuit.measure_all()
    
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        
-
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+            
+        print(circuit)
         qubit0 = 0
 
         for result in memory:
