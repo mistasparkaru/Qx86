@@ -6,9 +6,6 @@ Qx86 is an intel 8080/Z80 emulator which executes all salient points of intel 80
 ## Background
 One of the major obstacles to the adoption of quantum computing is the requirement to define quantum circuits at the quantum gate level. Many programmers are familiar with high-level or low-level programming languages but not quantum gates nor the low-level quantum logic required to derive useful results from quantum computers. The steep learning curve involved when progressing from quantum gates to complex simulations such as Shor’s algorithm has proven too much for many developers. This software addresses this challenge by providing a Software Development Kit (SDK), translation layer, emulator and a framework of techniques for executing Intel 8080/Z80 assembler on a quantum computer, i.e. all salient points of CPU execution, logic, arithmetic and bitwise manipulation will be executed on the quantum computer using quantum circuits. Developers and researchers can use the SDK to write code in Intel 8080/Z80 assembler which is executed locally via traditional emulation and remotely on a quantum computer in parallel. The emulator features side-by-side code execution with visibility of the running quantum circuit and re-usable/overridable methods. This enables programmers to learn, reuse and contrast techniques for performing any traditional CPU based technique/instruction on a quantum computer; e.g. a programmer may know how to multiply and perform checks on a classical CPU but is not able to perform the same tasks in a quantum implementation, this SDK allows the programmer to pick and choose the methods they would like to use to fulfil their requirements.
 
-Introduction - https://youtu.be/xf41_0m81Z4 <br>
-Installation - https://youtu.be/_udBUOx7iFU <br>
-Usage - https://youtu.be/XNDj7YhFofs <br>
 
 
 ## Installation and use
@@ -17,7 +14,7 @@ Note - The code included in this repository has been tested with Python version 
 
 1. Download and install the latest version of Python
 ```
-https://www.python.org/ftp/python/3.10.7/python-3.10.7-amd64.exe
+https://www.python.org/downloads/windows/
 ```
 
 2. Install the Microsoft Visual C++ run time 
@@ -25,15 +22,18 @@ https://www.python.org/ftp/python/3.10.7/python-3.10.7-amd64.exe
 https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
 ```
 
-3. Install IBMs Qiskit using the following command
+3. Install IBMs Qiskit using the following commands
 ```
-python.exe -m pip install qiskit==0.39.2
+python -m pip install qiskit
+python -m pip install qiskit-ibm-runtime
+python -m pip install qiskit-aer
 ```
 
 4. Install matplotlib and curses 
 ```
-python.exe -m pip install matplotlib
-python.exe -m pip install windows-curses
+python -m pip install matplot-lib
+python -m pip install pylatexenc
+python -m pip install windows-curses
 ```
 
 5. Sign up for IBMs quantum experience at
