@@ -1,17 +1,15 @@
 from z80 import z80
-from qiskit import IBMQ,execute,Aer
+from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit_ibm_runtime import SamplerV2 as Sampler
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit.circuit.library.standard_gates import C4XGate
-
-import qiskit as q
+from qiskit.providers.fake_provider import GenericBackendV2
 import sys
-IBMQ.load_account()
 import math
 
-provider = IBMQ.get_provider("ibm-q")
-from qiskit.tools.monitor import job_monitor
-import qiskit.providers.aer.noise as  noise
 
-backend = provider.get_backend("ibmq_qasm_simulator")
+backend = GenericBackendV2(num_qubits=30)
 #backend = provider.get_backend("ibmq_quito")
 #backend = provider.get_backend("ibmq_belem")
 #backend = provider.get_backend("simulator_extended_stabilizer")
@@ -26,6 +24,7 @@ from matplotlib import style
 class q80(z80):
     
     QuantumExecute = "None"
+    shots = 10
     #QuantumExecute = "INC1" #Quantum method 1 - In silicon method (Very slow)
     #QuantumExecute = "INC2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "INC3" #Quantum method 3 - Entirely in the quantum domain, including the F register
@@ -86,22 +85,23 @@ c:  3/═══════════════╩══╩══╩══
         inputA = inputA * math.pi
         inputB = inputB * math.pi
 
-        circuit = q.QuantumCircuit(3,3)
+        circuit = QuantumCircuit(3,3)
         circuit.ry(inputA,0)
         circuit.ry(inputB,1)
         circuit.ccx(0,1,2)
-        circuit.measure(0,0)
-        circuit.measure(1,1)
-        circuit.measure(2,2)
+        circuit.measure_all()
         print("Quantum AND circuit")
         print(circuit)
   
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-      
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
-        memory = result.get_memory(circuit)
         qubit0 = 0
         qubit1 = 0
         qubit2 = 0
@@ -127,19 +127,22 @@ c:  3/═══════════════╩══╩══╩══
         """
         inputA = inputA * math.pi
 
-        circuit = q.QuantumCircuit(1,1)
+        circuit = QuantumCircuit(1,1)
         circuit.ry(inputA,0)
         circuit.x(0)
-        circuit.measure(0,0)
+        circuit.measure_all()
         print("Quantum NOT circuit")        
         print(circuit)
     
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-         
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+            
         qubit0 = 0
 
         for result in memory:
@@ -162,22 +165,23 @@ c:  2/═══════════════╩══╩══
         inputA = inputA * math.pi
         inputB = inputB * math.pi
 
-        circuit = q.QuantumCircuit(2,2)
+        circuit = QuantumCircuit(2,2)
         circuit.ry(inputA,0)
         circuit.ry(inputB,1)
         circuit.cx(0,1)
-        circuit.measure(0,0)
-        circuit.measure(1,1)
+        circuit.measure_all()
         print("Quantum XOR circuit")
         print(circuit)
  
-        shots=2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-
-       
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+        
         qubit0 = 0
         qubit1 = 0
 
@@ -207,27 +211,26 @@ c:  4/════════════════════════�
         inputA = inputA * math.pi
         inputB = inputB * math.pi
 
-        circuit = q.QuantumCircuit(4,4)
+        circuit = QuantumCircuit(4,4)
         circuit.ry(inputA,0)
         circuit.ry(inputB,2)
         circuit.cx(0,1)
         circuit.cx(2,1)
         circuit.cx(2,3)
         circuit.ccx(1,0,3)
-        circuit.measure(0,0)
-        circuit.measure(1,1)
-        circuit.measure(2,2)
-        circuit.measure(3,3)
+        circuit.measure_all()
         print("Quantum OR circuit")
         print(circuit)
  
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        
-       
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+        
         qubit0 = 0
         qubit1 = 0
         qubit2 = 0
@@ -258,21 +261,22 @@ c:  2/═══════════════╩══╩══
         """        
         inputA = int(inputA) * math.pi
 
-        circuit = q.QuantumCircuit(2,2)
+        circuit = QuantumCircuit(2,2)
         circuit.ry(inputA,0)
         circuit.cx(0,1)
-        circuit.measure(0,0)
-        circuit.measure(1,1)
+        circuit.measure_all()
         print("Quantum if circuit")
         print(circuit)
   
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-
-        
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+            
         qubit0 = 0
         qubit1 = 0
 
@@ -283,7 +287,7 @@ c:  2/═══════════════╩══╩══
         qubit0 = qubit0/shots
         qubit1 = qubit1/shots
 
-        return int(qubit1)
+        return round(qubit1)
 
 #****************************************************************************************************************************************************************************
 #****************************************************************************************************************************************************************************
@@ -342,7 +346,7 @@ c: 17/════════════════════════�
             input7 = int(input7) * math.pi
 
              
-            circuit = q.QuantumCircuit(17,17)
+            circuit = QuantumCircuit(17,17)
 
             #Bit 0
             circuit.ry(incrementbit,0)
@@ -416,32 +420,22 @@ c: 17/════════════════════════�
             # AND1 
             circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
 
-            circuit.measure(0,0)
-            circuit.measure(1,1) 
-            circuit.measure(2,2)
-            circuit.measure(3,3) 
-            circuit.measure(4,4)
-            circuit.measure(5,5)
-            circuit.measure(6,6) 
-            circuit.measure(7,7)
-            circuit.measure(8,8)
-            circuit.measure(9,9) 
-            circuit.measure(10,10)
-            circuit.measure(11,11)
-            circuit.measure(12,12) 
-            circuit.measure(13,13)
-            circuit.measure(14,14)
-            circuit.measure(15,15) 
-            circuit.measure(16,16)
+
+            circuit.measure_all()
+            
+            
             print("Quantum increment circuit")
             print(circuit)
 
-            shots = 2000
-            job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-            job_monitor(job)
+            shots = self.shots
+            pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+            isa_circuit = pm.run(circuit)
+            sampler = Sampler(backend=backend)
+            job = sampler.run([isa_circuit], shots=shots)
             result = job.result()
+            pub_result = result[0]
+            memory = pub_result.data.meas.get_bitstrings()
 
-            memory = result.get_memory(circuit)
 
             qubit0 = 0
             qubit1 = 0
@@ -499,7 +493,10 @@ c: 17/════════════════════════�
             qubit15 = qubit15/shots
             qubit16 = qubit16/shots
 
-            return str(int(qubit16)) + str(int(qubit15)) + str(int(qubit13)) + str(int(qubit11)) + str(int(qubit9)) + str(int(qubit7)) + str(int(qubit5)) + str(int(qubit3)) + str(int(qubit1))
+
+            #print(" qubit 0 = " + str(int(qubit0)) + " qubit 1 = " + str(int(qubit1)) + " qubit 2 = " + str(int(qubit2)) + " qubit 3 = " + str(int(qubit3)) + " qubit 4 = " + str(int(qubit4)) + " qubit 5 = " + str(int(qubit5)) + " qubit 6 = " + str(int(qubit6)) + " qubit 7 = " + str(int(qubit7)))
+
+            return str(round(qubit16)) + str(round(qubit15)) + str(round(qubit13)) + str(round(qubit11)) + str(round(qubit9)) + str(round(qubit7)) + str(round(qubit5)) + str(round(qubit3)) + str(round(qubit1))
 
     def myQuantum8BitIncWithFlags(self,input7,input6,input5,input4,input3,input2,input1,input0):
    
@@ -513,7 +510,7 @@ c: 17/════════════════════════�
         input6 = int(input6) * math.pi
         input7 = int(input7) * math.pi
          
-        circuit = q.QuantumCircuit(31,31)
+        circuit = QuantumCircuit(31,31)
 
         #Bit 0
         circuit.ry(incrementbit,0)
@@ -626,48 +623,20 @@ c: 17/════════════════════════�
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)            
 
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18) 
-        circuit.measure(19,19)
-        circuit.measure(20,20) 
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23) 
-        circuit.measure(24,24)
-        circuit.measure(25,25)
-        circuit.measure(26,26) 
-        circuit.measure(27,27)
-        circuit.measure(28,28)
-        circuit.measure(29,29) 
-        circuit.measure(30,30)
+        circuit.measure_all()
         
 
         print(circuit)
   
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -769,7 +738,7 @@ c: 17/════════════════════════�
         qubit29 = qubit29/shots
         qubit30 = qubit30/shots
 
-        return str(int(qubit15)) + str(int(qubit13)) + str(int(qubit11)) + str(int(qubit9)) + str(int(qubit7)) + str(int(qubit5)) + str(int(qubit3)) + str(int(qubit1)) + ":"  + str(int(qubit15)) + str(int(qubit28)) + str(int(qubit26)) + str(int(qubit30)) + str(int(qubit17)) + str(int(qubit16))
+        return str(round(qubit15)) + str(round(qubit13)) + str(round(qubit11)) + str(round(qubit9)) + str(round(qubit7)) + str(round(qubit5)) + str(round(qubit3)) + str(round(qubit1)) + ":"  + str(round(qubit15)) + str(round(qubit28)) + str(round(qubit26)) + str(round(qubit30)) + str(round(qubit17)) + str(round(qubit16))
 
     def myQuantum4BitDec(self,inputA3,inputA2,inputA1,inputA0,borrow):
         """
@@ -835,7 +804,7 @@ c: 25/════════════════════════�
     
         
         
-        circuit = q.QuantumCircuit(25,25)
+        circuit = QuantumCircuit(25,25)
         #Bit 0
         circuit.ry(math.pi,0)
         circuit.ry(inputA0,1)
@@ -915,40 +884,19 @@ c: 25/════════════════════════�
         circuit.ccx(22,23,24)
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)    
-        circuit.measure(19,19)
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23)
-        circuit.measure(24,24)
+        circuit.measure_all()
+        
         print("Quantum decrement circuit")    
         print(circuit)
     
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -1032,7 +980,7 @@ c: 25/════════════════════════�
         qubit24 = qubit24/shots
 
         #4 bit + borrow bit on qubit 24
-        return str(int(qubit24)) + str(int(qubit18)) + str(int(qubit12)) + str(int(qubit6)) + str(int(qubit3))
+        return str(round(qubit24)) + str(round(qubit18)) + str(round(qubit12)) + str(round(qubit6)) + str(round(qubit3))
 
     def myQuantum8BitXor(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0,inputB7,inputB6,inputB5,inputB4,inputB3,inputB2,inputB1,inputB0):
         """
@@ -1091,7 +1039,7 @@ c: 16/═══════════════╩══╩══╩══�
         inputB7 = int(inputB7) * math.pi
 
          
-        circuit = q.QuantumCircuit(16,16)
+        circuit = QuantumCircuit(16,16)
 
         #Bit 0
         circuit.ry(inputA0,0)
@@ -1142,32 +1090,19 @@ c: 16/═══════════════╩══╩══╩══�
         circuit.cx(14,15)
             
             
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
+        circuit.measure_all()
         print("Quantum XOR circuit")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
-
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+        #print(memory)
         qubit0 = 0
         qubit1 = 0
         qubit2 = 0
@@ -1203,7 +1138,7 @@ c: 16/═══════════════╩══╩══╩══�
             qubit13 = qubit13 + int(result[2])
             qubit14 = qubit14 + int(result[1])
             qubit15 = qubit15 + int(result[0])
-                   
+
         qubit0 = qubit0/shots
         qubit1 = qubit1/shots
         qubit2 = qubit2/shots
@@ -1220,8 +1155,10 @@ c: 16/═══════════════╩══╩══╩══�
         qubit13 = qubit13/shots
         qubit14 = qubit14/shots
         qubit15 = qubit15/shots
+        
+            
           
-        return str(int(qubit15)) + str(int(qubit13)) + str(int(qubit11)) + str(int(qubit9)) + str(int(qubit7)) + str(int(qubit5)) + str(int(qubit3)) + str(int(qubit1))
+        return str(round(qubit15)) + str(round(qubit13)) + str(round(qubit11)) + str(round(qubit9)) + str(round(qubit7)) + str(round(qubit5)) + str(round(qubit3)) + str(round(qubit1))
 
     def myQuantum8BitAnd(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0,inputB7,inputB6,inputB5,inputB4,inputB3,inputB2,inputB1,inputB0):
         """
@@ -1296,7 +1233,7 @@ c: 24/═══════════════╩══╩══╩══�
         inputB7 = int(inputB7) * math.pi
 
          
-        circuit = q.QuantumCircuit(24,24)
+        circuit = QuantumCircuit(24,24)
 
         #Bit 0
         circuit.ry(inputA0,0)
@@ -1347,39 +1284,18 @@ c: 24/═══════════════╩══╩══╩══�
         circuit.ccx(21,22,23)
         
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)
-        circuit.measure(19,19) 
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23) 
+        circuit.measure_all()
         print("Quantum AND circuit")            
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -1463,7 +1379,7 @@ c: 24/═══════════════╩══╩══╩══�
 
      
 
-        return str(int(qubit23)) + str(int(qubit20)) + str(int(qubit17)) + str(int(qubit14)) + str(int(qubit11)) + str(int(qubit8)) + str(int(qubit5)) + str(int(qubit2))
+        return str(round(qubit23)) + str(round(qubit20)) + str(round(qubit17)) + str(round(qubit14)) + str(round(qubit11)) + str(round(qubit8)) + str(round(qubit5)) + str(round(qubit2))
 
     def myQuantum8BitOr(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0,inputB7,inputB6,inputB5,inputB4,inputB3,inputB2,inputB1,inputB0):
         """
@@ -1553,7 +1469,7 @@ c: 32/════════════════════════�
         inputB6 = int(inputB6) * math.pi
         inputB7 = int(inputB7) * math.pi
          
-        circuit = q.QuantumCircuit(32,32)
+        circuit = QuantumCircuit(32,32)
 
         #Bit 0
         circuit.ry(inputA0,0)
@@ -1630,47 +1546,18 @@ c: 32/════════════════════════�
             
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31)        
             
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
-        circuit.measure(16,16)
-        circuit.measure(17,17) 
-        circuit.measure(18,18)
-        circuit.measure(19,19) 
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22) 
-        circuit.measure(23,23)
-        circuit.measure(24,24)
-        circuit.measure(25,25) 
-        circuit.measure(26,26)
-        circuit.measure(27,27)
-        circuit.measure(28,28) 
-        circuit.measure(29,29)
-        circuit.measure(30,30)
-        circuit.measure(31,31) 
+        circuit.measure_all()
         print("Quantum OR circuit")
         print(circuit)
  
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -1774,7 +1661,7 @@ c: 32/════════════════════════�
         qubit30 = qubit30/shots
         qubit31 = qubit31/shots     
 
-        return str(int(qubit31)) + str(int(qubit27)) + str(int(qubit23)) + str(int(qubit19)) + str(int(qubit15)) + str(int(qubit11)) + str(int(qubit7)) + str(int(qubit3))
+        return str(round(qubit31)) + str(round(qubit27)) + str(round(qubit23)) + str(round(qubit19)) + str(round(qubit15)) + str(round(qubit11)) + str(round(qubit7)) + str(round(qubit3))
 
     def myQuantum4BitLatch(self,input):
         """
@@ -1848,7 +1735,7 @@ c: 29/════════════════════════�
         inputA3 = int(input[0]) * math.pi
  
 
-        circuit = q.QuantumCircuit(29,29)
+        circuit = QuantumCircuit(29,29)
         #Bit 0
         circuit.ry(inputA0,0)
         circuit.ry(enable,1)
@@ -1942,44 +1829,19 @@ c: 29/════════════════════════�
     
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28)
         
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)    
-        circuit.measure(19,19)
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23)
-        circuit.measure(24,24)
-        circuit.measure(25,25)
-        circuit.measure(26,26)
-        circuit.measure(27,27)
-        circuit.measure(28,28)        
+        circuit.measure_all()
+        
         print("Quantum lacth circuit")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -2073,7 +1935,7 @@ c: 29/════════════════════════�
         qubit27 = qubit27/shots
         qubit28 = qubit28/shots
 
-        return str(int(qubit26)) + str(int(qubit19)) + str(int(qubit12)) + str(int(qubit5))
+        return str(round(qubit26)) + str(round(qubit19)) + str(round(qubit12)) + str(round(qubit5))
 
     def myQuantum1BitHadamardLatch(self,input):
         """
@@ -2087,7 +1949,7 @@ c: 2/ ════════════════════╩══╩�
         inputA0 = int(input) * math.pi
         
       
-        circuit = q.QuantumCircuit(2,2)
+        circuit = QuantumCircuit(2,2)
         
         
         #Bit 0
@@ -2097,17 +1959,18 @@ c: 2/ ════════════════════╩══╩�
         circuit.cx(0,1)
 
         
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
+        circuit.measure_all()
         
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         
         output0 = 0
@@ -2121,7 +1984,7 @@ c: 2/ ════════════════════╩══╩�
         output0 = output0/shots        
      
 
-        return str(int(output0))
+        return str(round(output0))
 
     def myQuantum4BitHadamardLatch(self,input):
         """
@@ -2275,7 +2138,7 @@ c: 16/════════════════════╩══╩�
         inputA7 = int(inputA7) * math.pi
         
         
-        circuit = q.QuantumCircuit(16,16)
+        circuit = QuantumCircuit(16,16)
         
         
         #Bit 0
@@ -2327,33 +2190,20 @@ c: 16/════════════════════╩══╩�
         circuit.cx(14,15)
   
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)
+        circuit.measure_all()
 
         
-        
+        print("Quantum 8 Bit Hadamard Latch")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         
         output0 = 0
@@ -2391,9 +2241,9 @@ c: 16/════════════════════╩══╩�
         output5 = output5/shots        
         output6 = output6/shots        
         output7 = output7/shots        
-        
+
  
-        return str(int(output7)) + str(int(output6)) + str(int(output5)) + str(int(output4)) + str(int(output3)) + str(int(output2)) + str(int(output1)) + str(int(output0))
+        return str(round(output7)) + str(round(output6)) + str(round(output5)) + str(round(output4)) + str(round(output3)) + str(round(output2)) + str(round(output1)) + str(round(output0))
 
     def myQuantum1BitLatch(self,input):
         """
@@ -2461,6 +2311,7 @@ c: 8/═════════════════════════
         circuit.measure(5,5)
         circuit.measure(6,6) 
         circuit.measure(7,7)
+        
         print("Quantum latch circuit")
         print(circuit)
 
@@ -2573,7 +2424,7 @@ c: 25/════════════════════════�
         inputB3 = int(inputB3) * math.pi
         
         
-        circuit = q.QuantumCircuit(25,25)
+        circuit = QuantumCircuit(25,25)
         #Bit 0
         circuit.ry(inputA0,0)
         circuit.ry(inputB0,1)
@@ -2653,40 +2504,19 @@ c: 25/════════════════════════�
         circuit.ccx(22,23,24)
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)    
-        circuit.measure(19,19)
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23)
-        circuit.measure(24,24)
+        circuit.measure_all()
+        
         print("Quantum adder circuit")        
         print(circuit)
         
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -2770,7 +2600,7 @@ c: 25/════════════════════════�
 
  
         #4bit + carry bit on qubit 24
-        return str(int(qubit24)) + str(int(qubit18)) + str(int(qubit12)) + str(int(qubit6)) + str(int(qubit3))
+        return str(round(qubit24)) + str(round(qubit18)) + str(round(qubit12)) + str(round(qubit6)) + str(round(qubit3))
 
     def myQuantum4BitSubtractor(self,inputA3,inputA2,inputA1,inputA0,inputB3,inputB2,inputB1,inputB0,borrow):
         """
@@ -2840,7 +2670,7 @@ c: 25/════════════════════════�
         inputB3 = int(inputB3) * math.pi
         
         
-        circuit = q.QuantumCircuit(25,25)
+        circuit = QuantumCircuit(25,25)
         #Bit 0
         circuit.ry(inputA0,0)
         circuit.ry(inputB0,1)
@@ -2936,40 +2766,19 @@ c: 25/════════════════════════�
         circuit.ccx(22,23,24)
         circuit.barrier(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)    
-        circuit.measure(19,19)
-        circuit.measure(20,20)
-        circuit.measure(21,21)
-        circuit.measure(22,22)
-        circuit.measure(23,23)
-        circuit.measure(24,24)
+        circuit.measure_all()
+        
         print("Quantum subtractor circuit")
         print(circuit)        
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -3054,7 +2863,7 @@ c: 25/════════════════════════�
         qubit24 = qubit24/shots
 
  
-        return str(int(qubit24)) + str(int(qubit18)) + str(int(qubit12)) + str(int(qubit6)) + str(int(qubit3))
+        return str(round(qubit24)) + str(round(qubit18)) + str(round(qubit12)) + str(round(qubit6)) + str(round(qubit3))
 
     def myQuantumRyAdd(self,inputA,inputB):
         """
@@ -3111,7 +2920,7 @@ c: 19/════════════════════════�
         mB = inputB % 7
         fB = inputB // 7	
 
-        circuit = q.QuantumCircuit(19,19)
+        circuit = QuantumCircuit(19,19)
         
         
         x = 0
@@ -3138,35 +2947,19 @@ c: 19/════════════════════════�
         
             x = x + 1
             
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12)
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15)            
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18)
+        circuit.measure_all()
         
         print("Quantum Ry based adder circuit")
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -3306,7 +3099,7 @@ c: 19/════════════════════╩══╩�
         inputB7 = int(inputB7) * math.pi
 
          
-        circuit = q.QuantumCircuit(19,19)
+        circuit = QuantumCircuit(19,19)
 
         #Bit 0
         circuit.ry(inputA0,0)
@@ -3368,34 +3161,18 @@ c: 19/════════════════════╩══╩�
         circuit.append(C4XGate(), [9,11,13,15, 17])
         circuit.ccx(16,17,18)
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
-        circuit.measure(16,16)
-        circuit.measure(17,17)
-        circuit.measure(18,18) 
+        circuit.measure_all()
 
         print(circuit)
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -3460,7 +3237,7 @@ c: 19/════════════════════╩══╩�
         qubit17 = qubit17/shots
         qubit18 = qubit18/shots
 
-        return str(int(qubit18)) 
+        return str(round(qubit18)) 
 
     def myQuantumSwap(self,inputA0,inputA1,inputA2,inputA3,inputA4,inputA5,inputA6,inputA7,inputB0,inputB1,inputB2,inputB3,inputB4,inputB5,inputB6,inputB7):
         """
@@ -3522,7 +3299,7 @@ c: 16/════════════════════════�
 
 
          
-        circuit = q.QuantumCircuit(16,16)
+        circuit = QuantumCircuit(16,16)
 
         #Bit 0
         circuit.ry(inputA0,0)
@@ -3565,33 +3342,20 @@ c: 16/════════════════════════�
         circuit.swap(7,15)
                     
 
-        circuit.measure(0,0)
-        circuit.measure(1,1) 
-        circuit.measure(2,2)
-        circuit.measure(3,3) 
-        circuit.measure(4,4)
-        circuit.measure(5,5)
-        circuit.measure(6,6) 
-        circuit.measure(7,7)
-        circuit.measure(8,8)
-        circuit.measure(9,9) 
-        circuit.measure(10,10)
-        circuit.measure(11,11)
-        circuit.measure(12,12) 
-        circuit.measure(13,13)
-        circuit.measure(14,14)
-        circuit.measure(15,15) 
+        circuit.measure_all() 
 
 
         print(circuit)
         
 
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        job_monitor(job)
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
 
         qubit0 = 0
         qubit1 = 0
@@ -3647,7 +3411,7 @@ c: 16/════════════════════════�
         qubit15 = qubit15/shots
 
 
-        return str(int(qubit0)) + str(int(qubit1)) + str(int(qubit2)) + str(int(qubit3)) + str(int(qubit4)) + str(int(qubit5)) + str(int(qubit6)) + str(int(qubit7)) + str(int(qubit8)) + str(int(qubit9)) + str(int(qubit10)) + str(int(qubit11)) + str(int(qubit12)) + str(int(qubit13)) + str(int(qubit14)) + str(int(qubit15))
+        return str(round(qubit0)) + str(round(qubit1)) + str(round(qubit2)) + str(round(qubit3)) + str(round(qubit4)) + str(round(qubit5)) + str(round(qubit6)) + str(round(qubit7)) + str(round(qubit8)) + str(round(qubit9)) + str(round(qubit10)) + str(round(qubit11)) + str(round(qubit12)) + str(round(qubit13)) + str(round(qubit14)) + str(round(qubit15))
 
 
 
@@ -3659,7 +3423,7 @@ c: 16/════════════════════════�
 
     def eightbitinc(self,register):
         if self.QuantumExecute != "INC1" and self.QuantumExecute != "INC2" and self.QuantumExecute != "INC3":
-            self.debugline = "Traditional method"
+
             x = int(register,2)
             x = x + 1 
             if x == 256: x = 0
@@ -3758,7 +3522,7 @@ c: 16/════════════════════════�
             rr = int(self.IY,2)
 
         if self.QuantumExecute != "INC1" and self.QuantumExecute != "INC2":
-            self.debugline = "Traditional method"
+
             rr = rr + 1
             if rr > 65535:
                 rr = rr - 65536
@@ -3851,7 +3615,7 @@ c: 16/════════════════════════�
 
     def incNoFlags(self,number):
         if self.QuantumExecute != "INC1" and self.QuantumExecute != "INC2":
-            self.debugline = "Traditional method"
+
             number = number + 1
             if number == 65536: number = 0
             return number
@@ -3920,7 +3684,7 @@ c: 16/════════════════════════�
  
     def eightbitdec(self,register):
         if self.QuantumExecute != "DEC1" and self.QuantumExecute != "DEC2":
-            self.debugline = "Traditional method"
+
             x = int(register,2)
             x = x - 1
             if x == -1: x = 255
@@ -4020,7 +3784,7 @@ c: 16/════════════════════════�
 
     def decNoFlags(self,number):
         if self.QuantumExecute != "DEC1" and self.QuantumExecute != "DEC2":
-            self.debugline = "Traditional method"
+
             number = number - 1
             if number < 0: number = number + 65536
             return number
@@ -4187,7 +3951,7 @@ c: 16/════════════════════════�
             rr = int(self.IY,2)
 
         if self.QuantumExecute != "DEC1" and self.QuantumExecute != "DEC2":
-            self.debugline = "Traditional method"
+
             rr = rr - 1
             if rr < 0:
                rr = rr + 65536
@@ -4365,7 +4129,7 @@ c: 16/════════════════════════�
     
     def eightBitDecNoFlags(self,register):
         if self.QuantumExecute != "DEC1" and self.QuantumExecute != "DEC2":
-            self.debugline = "Traditional method"
+
             x = register
             x = x - 1
             if x == -1: x = 255
@@ -4454,7 +4218,7 @@ c: 16/════════════════════════�
     def eightbitxor(self,register):
 
         if self.QuantumExecute != "XOR1" and self.QuantumExecute != "XOR2":
-            self.debugline = "Traditional method"
+
             A = int(self.A,2)
             xorwith = int(register,2)
             xored = bin(A ^ xorwith)[2:].zfill(8)
@@ -4485,7 +4249,7 @@ c: 16/════════════════════════�
     def eightbitand(self,register):
 
         if self.QuantumExecute != "AND1" and self.QuantumExecute != "AND2":
-            self.debugline = "Traditional method"
+
             A = int(self.A,2)
             andwith = int(register,2)
             anded = bin(A & andwith)[2:].zfill(8)
@@ -4515,7 +4279,7 @@ c: 16/════════════════════════�
 
     def singleand(self,register1,register2):
         if self.QuantumExecute != "AND1" and self.QuantumExecute != "AND2":
-            self.debugline = "Traditional method"
+
             return (register1 & register2)
         if self.QuantumExecute == "AND1":
             self.debugline = "Quantum method 1"
@@ -4542,7 +4306,7 @@ c: 16/════════════════════════�
     def eightbitor(self,register):
 
         if self.QuantumExecute != "OR1" and self.QuantumExecute != "OR2":
-            self.debugline = "Traditional method"
+
             A = int(self.A,2)
             oredwith = int(register,2)
             ored = bin(A | oredwith)[2:].zfill(8)
@@ -4570,7 +4334,7 @@ c: 16/════════════════════════�
 
     def singleor(self,register1,register2):
         if self.QuantumExecute != "OR1" and self.QuantumExecute != "OR2":
-            self.debugline = "Traditional method"
+
             return (register1 | register2)
             
 
@@ -4600,7 +4364,7 @@ c: 16/════════════════════════�
 
 
         if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
-            self.debugline = "Traditional method"
+
 
             if self.preopcode == "11011101" and self.opcode == "01100000": self.IX = register2 + self.IX[8:16]
             if self.preopcode == "11111101" and self.opcode == "01100000": self.IY = register2 + self.IY[8:16]
@@ -5105,7 +4869,7 @@ c: 16/════════════════════════�
 
     def conditionalSetPC(self,addr,condition):
         if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
-            self.debugline = "Traditional method"
+
             if condition == "1": return addr
             else: return False
         if self.QuantumExecute == "LOAD1":
@@ -5140,7 +4904,7 @@ c: 16/════════════════════════�
         C = "0"
         
         if self.QuantumExecute != "ADD1" and self.QuantumExecute != "ADD2" and self.QuantumExecute != "ADD3":
-            self.debugline = "Traditional method"
+
             total = A + (B + addition)
             if total > 255:
                 total = total - 256
@@ -5301,7 +5065,7 @@ c: 16/════════════════════════�
 
     def eightBitAddNoFlagsNotSigned(self,number1,number2):
         if self.QuantumExecute != "ADD1" and self.QuantumExecute != "ADD2":
-            self.debugline = "Traditional method"
+
             output = number1 + number2
             if output < 0: output = output + 256
             if output > 255: output = output - 256
@@ -5404,7 +5168,7 @@ c: 16/════════════════════════�
     def sixteenBitAddNoFlags(self,number1,number2):
 
         if self.QuantumExecute != "ADD1" and self.QuantumExecute != "ADD2":
-            self.debugline = "Traditional method"
+
             self.debugline = "normal operation"
             output = number1 + number2
             if output < 0: output = output + 65536
@@ -5600,7 +5364,7 @@ c: 16/════════════════════════�
 
         if self.QuantumExecute != "SUB1" and self.QuantumExecute != "SUB2":
             sub = (A - B) - minus
-            self.debugline = "Traditional method"
+
             C = "0"
             if sub < 0:
                 sub = sub  + 256
@@ -5728,7 +5492,7 @@ c: 16/════════════════════════�
 
     def eightBitSubNoFlags(self,number1,number2):
         if self.QuantumExecute != "SUB1" and self.QuantumExecute != "SUB2":
-            self.debugline = "Traditional method"
+
             output = number1 - number2
             return output
         if self.QuantumExecute == "SUB1":
@@ -5917,7 +5681,7 @@ c: 16/════════════════════════�
 
     def eightBitSubNoFlagsNotSigned(self,number1,number2):
         if self.QuantumExecute != "SUB1" and self.QuantumExecute != "SUB2":
-            self.debugline = "Traditional method"
+
             output = number1 - number2
             if output < 0: output = output + 256
             if output > 255: output = output - 256
@@ -6021,7 +5785,7 @@ c: 16/════════════════════════�
 
     def eightBitSubNoFlagsUnsigned(self,number1,number2):
         if self.QuantumExecute != "SUB1" and self.QuantumExecute != "SUB2":
-            self.debugline = "Traditional method"
+
             output = number1 - number2
             self.debugline = "number 1 " + str(number1) + " - number2 " + str(number2) + " = " + str(output)
             return output
@@ -6122,7 +5886,7 @@ c: 16/════════════════════════�
 
     def xxbitxx(self,register):
         if self.QuantumExecute != "SetResBit1" and self.QuantumExecute != "SetResBit2":
-            self.debugline = "Traditional method"
+
             if self.opy < 8:
                 bit = 0
                 if self.opx == 4: bit = 0
@@ -6459,7 +6223,7 @@ c: 16/════════════════════════�
         P = "0"
  
         if self.QuantumExecute != "ADD1" and self.QuantumExecute != "ADD2":
-            self.debugline = "Traditional method"
+
             total = A + B
 
             if total > 65535:
@@ -6663,7 +6427,7 @@ c: 16/════════════════════════�
         C = "0"
 
         if self.QuantumExecute != "ADD1" and self.QuantumExecute != "ADD2":
-            self.debugline = "Traditional method"
+
             total = A + B + int(self.F[7])
      
             if total > 65535:
@@ -6866,7 +6630,7 @@ c: 16/════════════════════════�
         Z = "0"
 
         if self.QuantumExecute != "SUB1" and self.QuantumExecute != "SUB2":
-            self.debugline = "Traditional method"
+
             total = A - B - int(self.F[7])
             
             if total < 0:
@@ -7065,7 +6829,7 @@ c: 16/════════════════════════�
  
     def neg(self,register):
         if self.QuantumExecute != "NEG1" and self.QuantumExecute != "NEG2":
-            self.debugline = "Traditional method"
+
             return 0 - register
         if self.QuantumExecute == "NEG1":
             self.debugline = "Quantum method 1"
@@ -7165,7 +6929,7 @@ c: 16/════════════════════════�
     
     def rotate(self,bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7):
         if self.QuantumExecute != "ROT1" and self.QuantumExecute != "ROT2" and self.QuantumExecute != "ROT3":
-            self.debugline = "Traditional method"
+
             return bit0 + bit1 + bit2 + bit3 + bit4 + bit5 + bit6 + bit7
             
         if self.QuantumExecute == "ROT1":
@@ -7184,7 +6948,7 @@ c: 16/════════════════════════�
     
     def scf(self):
         if self.QuantumExecute != "SCF1" and self.QuantumExecute != "SCF2":
-            self.debugline = "Traditional method"
+
             self.F = self.F[0] + self.F[1] + self.F[2] + "0" + self.F[4] + self.F[5] + "0" + "1"   
             
         if self.QuantumExecute == "SCF1":
@@ -7197,7 +6961,7 @@ c: 16/════════════════════════�
 
     def singleload(self,bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7):
         if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3" and self.QuantumExecute != "LOAD4":
-            self.debugline = "Traditional method"
+
             return bit0 + bit1 + bit2 + bit3 + bit4 + bit5 + bit6 + bit7
             
         if self.QuantumExecute == "LOAD1":
@@ -7220,7 +6984,7 @@ c: 16/════════════════════════�
 
     def loadhlr(self,data,original):
         if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
-            self.debugline = "Traditional method"
+
             if self.preopcode == "":
                 if self.stage == "1":
                     stage = ""
@@ -7454,7 +7218,7 @@ c: 16/════════════════════════�
 
     def eightbitcp(self,register):
         if self.QuantumExecute != "CP1" and self.QuantumExecute != "CP2" and self.QuantumExecute != "CP3":
-            self.debugline = "Traditional method"
+
             A = int(self.A,2)
             N = int(register,2)
 
@@ -7667,7 +7431,7 @@ c: 16/════════════════════════�
 
     def setBoolValue(self,value):
         if self.QuantumExecute != "LOAD1" and self.QuantumExecute != "LOAD2" and self.QuantumExecute != "LOAD3":
-            self.debugline = "Traditional method"
+
             return value
         if self.QuantumExecute == "LOAD1":
             self.debugline = "Quantum method 1"
@@ -7681,7 +7445,7 @@ c: 16/════════════════════════�
             
     def setPC(self,addr):
         if self.QuantumExecute != "SetPC1" and self.QuantumExecute != "SetPC2":
-            self.debugline = "Traditional method"
+
             return addr
         if self.QuantumExecute == "SetPC1":
             self.debugline = "Quantum method 1"
@@ -7692,7 +7456,6 @@ c: 16/════════════════════════�
     
     def regtodatabus(self,register):
         if self.QuantumExecute != "DataBus1" and self.QuantumExecute != "DataBus2":
-            self.debugline = "Traditional method"
  
             self.d7 = bool(int(register[0]))
             self.d6 = bool(int(register[1]))
@@ -7731,7 +7494,7 @@ c: 16/════════════════════════�
 
     def regtoaddrbus(self,register):
         if self.QuantumExecute != "AddrBus1" and self.QuantumExecute != "AddrBus2":
-            self.debugline = "Traditional method"
+
 
  
             self.a15 = bool(int(register[0]))
@@ -7843,22 +7606,22 @@ c: 16/════════════════════════�
         inputC = int(bits[2]) * math.pi
         inputD = int(bits[3]) * math.pi
 
-        circuit = q.QuantumCircuit(4,4)
+        circuit = QuantumCircuit(4,4)
         circuit.ry(inputA,0)
         circuit.ry(inputB,1)
         circuit.ry(inputC,2)
         circuit.ry(inputD,3)
-        circuit.measure(0,0)
-        circuit.measure(1,1)
-        circuit.measure(2,2)
-        circuit.measure(3,3)
+        circuit.measure_all()
   
-        shots = 2000
-        job = q.execute(circuit, backend=backend, shots=shots, memory=True)
-        
+        shots = self.shots
+        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
+        isa_circuit = pm.run(circuit)
+        sampler = Sampler(backend=backend)
+        job = sampler.run([isa_circuit], shots=shots)
         result = job.result()
-
-        memory = result.get_memory(circuit)
+        pub_result = result[0]
+        memory = pub_result.data.meas.get_bitstrings()
+            
         qubit0 = 0
         qubit1 = 0
         qubit2 = 0
