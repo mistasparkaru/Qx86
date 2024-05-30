@@ -31,7 +31,7 @@ python -m pip install qiskit-aer
 
 4. Install matplotlib and curses 
 ```
-python -m pip install matplot-lib
+python -m pip install matplotlib
 python -m pip install pylatexenc
 python -m pip install windows-curses
 ```
