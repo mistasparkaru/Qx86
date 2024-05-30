@@ -10,7 +10,7 @@ One of the major obstacles to the adoption of quantum computing is the requireme
 
 ## Installation and use
 Due to the nature of this work, you will need a basic understanding of development, assembler and quantum computers.
-Note - The code included in this repository has been tested with Python version 3.7 to 3.10 on Windows 10.
+Note - The code included in this repository has been tested with Python version 3.7 to 3.12 on Windows 10.
 
 1. Download and install the latest version of Python
 ```
@@ -64,17 +64,17 @@ Python.exe Acccount.py
 Python.exe cpu3.py
 ```
 Note – Make your command prompt window full screen as curses may error if it cannot fit the entire screen in your window.
-This will run the traditional emulator and emulator for execution on a quantum computer in parallel. Note the RAM contains an example program which loads the A register, increments A then halts.
+This will run the traditional emulator and emulator for execution on a quantum computer in parallel. Note the emulators pseudo RAM contains an example program which loads the A register, increments A then halts.
 
 ![image](https://user-images.githubusercontent.com/66572228/199703390-af98205e-d405-4c52-92bf-154daf02605d.png)
 
-To exit the emulator, press the Q button.<br>
+To exit the emulator, press the Q key.<br>
 
-10. The next step is to tell the emulator which instructions to execute on the quantum computer. This is done by editing the cpu3.py file and scrolling down until you get to the Example program section. This section contains a number of sample programs, in this example un-comment the line #qpu.QuantumExecute = "INC2" 
+10. The next step is to tell the emulator which instructions to execute on the quantum computer. This is done by editing the cpu3.py file and scrolling down until you get to the Example program section. This section contains a number of sample programs, in this example un-comment the line #qpu.QuantumExecute = "INC1" 
 
 ![image](https://user-images.githubusercontent.com/66572228/199703594-21d78f1e-a9b6-44c6-be81-bdf6e7841f28.png)
 
-11. We can now run the emulator again but note when the program counter gets to the INC instruction (3C) execution pauses, this is the emulator joining the queue for execution on one of IBMs quantum computers. After roughly 30 seconds the results will be returned from IBMs quantum computer and we can see that the A register has incremented.
+11. Execute the emulator again, but note when the program counter gets to the INC instruction (3C) execution pauses, this is the emulator joining the queue for execution on one of IBMs quantum computers. (or setting up a local quantum simulator) After roughly 30 seconds the results will be returned from IBMs quantum computer and we can see that the A register has incremented.
 
 ![image](https://user-images.githubusercontent.com/66572228/199703816-66f6fc91-3521-4a6a-b134-af0d646c28ba.png)
 
@@ -89,8 +89,8 @@ Python.exe cpu3.py myprogram.bin
 
 
 ## FAQ
-- Why does it take so long to execute, I thought qunatum computers where fast?<br>
-The majority of the delay is due to the queue we have to join for execution, but other delays include the latency of the API call and the fact that quantum computers are not designed to perform traditional logic operations.
+- Why does it take so long to execute, I thought quantum computers were fast?<br>
+The majority of the delay is due to the queuing mechanism we have to join for execution, but other delays include the latency of the API call and the fact that quantum computers are not designed to perform traditional logic operations.
 
 - Why can’t I run the entire binary on the quantum computer?<br>
 As you would have to join a queue for each instruction it would be extremely slow. You may edit the methods in q80.py to do this but each instruction will take circa 30 seconds to call and execute.
@@ -99,13 +99,13 @@ As you would have to join a queue for each instruction it would be extremely slo
 I have included multiple methods for each instruction, method 1 (INC1) calls each gate separately whereas method 2 (INC2) implements a quantum circuit for the entire (where possible) instruction so is much faster.
 
 - Why call it Qx86 when you only have intel 8080/Z80 compatibility?<br>
-Artistic license! Also q80 is a television and a qx80 is a car so those names were taken. Intel x86 compatibility is planned but will require more qubits due to the larger internal registers.
+Artistic license! Also q80 is a television set and a qx80 is a car so those names were already taken. Intel x86 compatibility is planned but will require more qubits due to the larger internal registers.
 
 - I get an error when I choose a real Quantum computer.<br>
-You must choose a quantum computer that meets the minimum requirements, all instructions executed using method 1 require 5 qubits whereas all instructions using method 2 require 32 qubits.
+You must choose a quantum computer that meets the minimum requirements, all instructions executed using method 1 require upto 5 qubits whereas all instructions using method 2 require upto 32 qubits.
 
 - Why turn a $1,000,000 quantum computer into a 40 year old CPU?<br>
 The motivation for this SDK is to provide a learning tool and re-useable reference framework, a framework that will help bridge the steep learning curve and enable developers to drive useful results from quantum computers. The framework will show developers that quantum computers can do anything a traditional computer can, just in a different manner. The SDK also prepares the groundwork (via the delivery of the emulators and translation layer) for a possible scenario where the overhead for performing classical computations on a quantum computer is not so large. This is not to say that the value of the SDK is purely theoretical, as even with today’s capability many quantum-based simulations require aspects of traditional logic which are included as re-usable methods within the framework. 
-Emulating a CPU was chosen as a goal for this SDK as it provides a provable mechanism for delivering every logic/arithmetic/bitwise function needed in a traditional computer. It is not our aim to reduce a quantum computer to a device only capable of traditional logic-based calculations but describe, prove and demonstrate how to perform those calculations. The logic calculations can be used to form parts of many quantum-based calculations and are found in a framework which developers are familiar with and can readily re-use.
+Emulating a CPU was chosen as a goal for this SDK as it provides a provable mechanism for delivering every logic/arithmetic/bitwise function needed in a traditional computer. It was not my aim to reduce a quantum computer to a device only capable of traditional logic-based calculations but describe, prove and demonstrate how to perform those calculations. The logic calculations can be used to form parts of many quantum-based calculations and are found in a framework which developers are familiar with and can readily re-use.
 
 
