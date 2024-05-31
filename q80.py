@@ -5,16 +5,10 @@ from qiskit_ibm_runtime import SamplerV2 as Sampler
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit.circuit.library.standard_gates import C4XGate
 from qiskit.providers.fake_provider import GenericBackendV2
+from qiskit_aer import AerSimulator
+from qiskit import QuantumCircuit, transpile
 import sys
 import math
-
-
-backend = GenericBackendV2(num_qubits=30)
-#backend = provider.get_backend("ibmq_quito")
-#backend = provider.get_backend("ibmq_belem")
-#backend = provider.get_backend("simulator_extended_stabilizer")
-
-
 from qiskit.visualization import plot_histogram
 from matplotlib import style
 
@@ -24,7 +18,8 @@ from matplotlib import style
 class q80(z80):
     
     QuantumExecute = "None"
-    shots = 10
+    QuantumComputer = AerSimulator(method='matrix_product_state')
+    shots = 2000
     #QuantumExecute = "INC1" #Quantum method 1 - In silicon method (Very slow)
     #QuantumExecute = "INC2" #Quantum method 2 - Entirely in the quantum domain
     #QuantumExecute = "INC3" #Quantum method 3 - Entirely in the quantum domain, including the F register
@@ -94,13 +89,10 @@ c:  3/═══════════════╩══╩══╩══
         print(circuit)
   
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -135,13 +127,10 @@ c:  3/═══════════════╩══╩══╩══
         print(circuit)
     
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
             
         qubit0 = 0
 
@@ -174,13 +163,10 @@ c:  2/═══════════════╩══╩══
         print(circuit)
  
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
         
         qubit0 = 0
         qubit1 = 0
@@ -223,13 +209,10 @@ c:  4/════════════════════════�
         print(circuit)
  
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
         
         qubit0 = 0
         qubit1 = 0
@@ -269,13 +252,10 @@ c:  2/═══════════════╩══╩══
         print(circuit)
   
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
             
         qubit0 = 0
         qubit1 = 0
@@ -428,13 +408,10 @@ c: 17/════════════════════════�
             print(circuit)
 
             shots = self.shots
-            pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-            isa_circuit = pm.run(circuit)
-            sampler = Sampler(backend=backend)
-            job = sampler.run([isa_circuit], shots=shots)
-            result = job.result()
-            pub_result = result[0]
-            memory = pub_result.data.meas.get_bitstrings()
+            QuantumComputer = self.QuantumComputer
+            circuit = transpile(circuit, QuantumComputer)
+            result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+            memory = result.get_memory(circuit)
 
 
             qubit0 = 0
@@ -630,13 +607,15 @@ c: 17/════════════════════════�
   
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        
+        circuit.measure_all()
+
+        shots = self.shots
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
+
 
         qubit0 = 0
         qubit1 = 0
@@ -890,13 +869,10 @@ c: 25/════════════════════════�
         print(circuit)
     
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -1095,13 +1071,11 @@ c: 16/═══════════════╩══╩══╩══�
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
+        
         #print(memory)
         qubit0 = 0
         qubit1 = 0
@@ -1289,13 +1263,10 @@ c: 24/═══════════════╩══╩══╩══�
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -1551,13 +1522,10 @@ c: 32/════════════════════════�
         print(circuit)
  
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -1835,13 +1803,10 @@ c: 29/════════════════════════�
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -1965,13 +1930,10 @@ c: 2/ ════════════════════╩══╩�
         print("1 bit Hadamard latch")
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         
         output0 = 0
@@ -2053,14 +2015,12 @@ c: 8/ ════════════════════╩══╩�
         print("4 bit Hadamard Latch")
         print(circuit)
 
+
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         
         output0 = 0
@@ -2191,16 +2151,12 @@ c: 16/════════════════════╩══╩�
         
         print("Quantum 8 Bit Hadamard Latch")
         print(circuit)
-
+        
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
-
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
         
         output0 = 0
         output1 = 0
@@ -2305,13 +2261,10 @@ c: 8/═════════════════════════
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -2501,13 +2454,10 @@ c: 25/════════════════════════�
         print(circuit)
         
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -2763,13 +2713,10 @@ c: 25/════════════════════════�
         print(circuit)        
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -2932,6 +2879,9 @@ c: 19/════════════════════════�
             aRy = self.numberToRyRotation(a)
             bRy = self.numberToRyRotation(b)
             
+            #3 = 0.6284 and 6 =  1.2568
+            #print("aRY = " + str(aRy) + " bRY = " + str(bRy))
+            
             circuit.ry(aRy,x)
             circuit.ry(bRy,x)
 
@@ -2944,14 +2894,12 @@ c: 19/════════════════════════�
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
+        test = 0
         qubit0 = 0
         qubit1 = 0
         qubit2 = 0
@@ -3017,12 +2965,13 @@ c: 19/════════════════════════�
         qubit18 = qubit18/shots
 
 
+
         
         total = self.probabilityToNumber((1 - qubit0) * 100) + self.probabilityToNumber((1 - qubit1) * 100) + self.probabilityToNumber((1 - qubit2) * 100) + self.probabilityToNumber((1 - qubit3) * 100) + self.probabilityToNumber((1 - qubit4) * 100) + self.probabilityToNumber((1 - qubit5) * 100) + self.probabilityToNumber((1 - qubit6) * 100) + self.probabilityToNumber((1 - qubit7) * 100) + self.probabilityToNumber((1 - qubit8) * 100) + self.probabilityToNumber((1 - qubit9) * 100) + self.probabilityToNumber((1 - qubit10) * 100) + self.probabilityToNumber((1 - qubit11) * 100) + self.probabilityToNumber((1 - qubit12) * 100) + self.probabilityToNumber((1 - qubit13) * 100) + self.probabilityToNumber((1 - qubit14) * 100) + self.probabilityToNumber((1 - qubit15) * 100) + self.probabilityToNumber((1 - qubit16) * 100) + self.probabilityToNumber((1 - qubit17) * 100) + self.probabilityToNumber((1 - qubit18) * 100)
         
       
 
-        print(str(total))
+
         return int(total)
 
     def myQuantumCP(self,inputA7,inputA6,inputA5,inputA4,inputA3,inputA2,inputA1,inputA0,inputB7,inputB6,inputB5,inputB4,inputB3,inputB2,inputB1,inputB0):
@@ -3157,13 +3106,10 @@ c: 19/════════════════════╩══╩�
         print(circuit)
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -3340,13 +3286,10 @@ c: 16/════════════════════════�
         
 
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
 
         qubit0 = 0
         qubit1 = 0
@@ -4977,8 +4920,7 @@ c: 16/════════════════════════�
 
             total = int(output7 + output6 + output5 + output4 + output3 + output2 + output1 + output0,2)
             
-            #total = 5 
-            self.debugline = "carry = " + str(addition)  +  "pre opcode = " + self.preopcode + " opcode = " + self.opcode + " opernad1 = " + self.operand1
+
             C = carry
         if self.QuantumExecute == "ADD2":
             self.debugline = "Quantum method 2"
@@ -5023,7 +4965,7 @@ c: 16/════════════════════════�
                 if x == fB: b = mB
                 if x > fB: b = 0
                 
-                #print("Sum number " + str(x) + "\t " + str(a) + " + " + str(b))
+
                 total = total + self.myQuantumRyAdd(a,b)
      
                 x = x + 1
@@ -7278,17 +7220,47 @@ c: 16/════════════════════════�
             and2 = str(self.myand(int(not2),int(borrow)))
             borrow = str(self.myor(int(and2),int(and1)))
                 
+
             xor1 = str(self.myxor(int(inputA[2]),int(inputB[2])))
             not1 = str(self.mynot(int(inputA[2])))
             and1 = str(self.myand(int(not1),int(inputB[2])))
             output2 = str(self.myxor(int(xor1),int(borrow)))
             not2 = str(self.mynot(int(xor1)))
             and2 = str(self.myand(int(not2),int(borrow)))
-            output6 = str(self.myxor(int(xor1),int(borrow)))
+            borrow = str(self.myor(int(and2),int(and1)))
+            
+            xor1 = str(self.myxor(int(inputA[3]),int(inputB[3])))
+            not1 = str(self.mynot(int(inputA[3])))
+            and1 = str(self.myand(int(not1),int(inputB[3])))
+            output3 = str(self.myxor(int(xor1),int(borrow)))
             not2 = str(self.mynot(int(xor1)))
             and2 = str(self.myand(int(not2),int(borrow)))
             borrow = str(self.myor(int(and2),int(and1)))
             
+            xor1 = str(self.myxor(int(inputA[4]),int(inputB[4])))
+            not1 = str(self.mynot(int(inputA[4])))
+            and1 = str(self.myand(int(not1),int(inputB[4])))
+            output4 = str(self.myxor(int(xor1),int(borrow)))
+            not2 = str(self.mynot(int(xor1)))
+            and2 = str(self.myand(int(not2),int(borrow)))
+            borrow = str(self.myor(int(and2),int(and1)))
+            
+            xor1 = str(self.myxor(int(inputA[5]),int(inputB[5])))
+            not1 = str(self.mynot(int(inputA[5])))
+            and1 = str(self.myand(int(not1),int(inputB[5])))
+            output5 = str(self.myxor(int(xor1),int(borrow)))
+            not2 = str(self.mynot(int(xor1)))
+            and2 = str(self.myand(int(not2),int(borrow)))
+            borrow = str(self.myor(int(and2),int(and1)))
+            
+            xor1 = str(self.myxor(int(inputA[6]),int(inputB[6])))
+            not1 = str(self.mynot(int(inputA[6])))
+            and1 = str(self.myand(int(not1),int(inputB[6])))
+            output6 = str(self.myxor(int(xor1),int(borrow)))
+            not2 = str(self.mynot(int(xor1)))
+            and2 = str(self.myand(int(not2),int(borrow)))
+            borrow = str(self.myor(int(and2),int(and1)))
+  
             xor1 = str(self.myxor(int(inputA[7]),int(inputB[7])))
             not1 = str(self.mynot(int(inputA[7])))
             and1 = str(self.myand(int(not1),int(inputB[7])))
@@ -7576,13 +7548,11 @@ c: 16/════════════════════════�
         circuit.measure_all()
    
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
+
             
         print(circuit)
         qubit0 = 0
@@ -7608,13 +7578,10 @@ c: 16/════════════════════════�
         circuit.measure_all()
   
         shots = self.shots
-        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
-        isa_circuit = pm.run(circuit)
-        sampler = Sampler(backend=backend)
-        job = sampler.run([isa_circuit], shots=shots)
-        result = job.result()
-        pub_result = result[0]
-        memory = pub_result.data.meas.get_bitstrings()
+        QuantumComputer = self.QuantumComputer
+        circuit = transpile(circuit, QuantumComputer)
+        result = QuantumComputer.run(circuit, shots=shots, memory=True).result()
+        memory = result.get_memory(circuit)
             
         qubit0 = 0
         qubit1 = 0
@@ -7639,6 +7606,7 @@ c: 16/════════════════════════�
         return round(output,2)
 
     def probabilityToNumber(self,x):
+
         output = math.acos((x-50)/100 * 2)
         output = round((output/math.pi) * 15,0)
         return output
