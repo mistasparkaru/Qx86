@@ -1,7 +1,7 @@
 # Qx86
 
 Welcome to the Github repository for Qx86. 
-Qx86 is an intel 8080/Z80 emulator which executes all salient points of intel 8080/Z80 execution on IBMs quantum computers.
+Qx86 is an Intel 8080/Z80 emulator which executes all salient points of Intel 8080/Z80 execution on IBMs quantum computers.
 
 ## Background
 One of the major obstacles to the adoption of quantum computing is the requirement to define quantum circuits at the quantum gate level. Many programmers are familiar with high-level or low-level programming languages but not quantum gates nor the low-level quantum logic required to derive useful results from quantum computers. The steep learning curve involved when progressing from quantum gates to complex simulations such as Shor’s algorithm has proven too much for many developers. This software addresses this challenge by providing a Software Development Kit (SDK), translation layer, emulator and a framework of techniques for executing Intel 8080/Z80 assembler on a quantum computer, i.e. all salient points of CPU execution, logic, arithmetic and bitwise manipulation will be executed on the quantum computer using quantum circuits. Developers and researchers can use the SDK to write code in Intel 8080/Z80 assembler which is executed locally via traditional emulation and remotely on a quantum computer in parallel. The emulator features side-by-side code execution with visibility of the running quantum circuit and re-usable/overridable methods. This enables programmers to learn, reuse and contrast techniques for performing any traditional CPU based technique/instruction on a quantum computer; e.g. a programmer may know how to multiply and perform checks on a classical CPU but is not able to perform the same tasks in a quantum implementation, this SDK allows the programmer to pick and choose the methods they would like to use to fulfil their requirements.
@@ -50,8 +50,8 @@ https://quantum-computing.ibm.com/
 ```
 Account.py  - A script which connects you to your IBM account
 cpu3.py     - The orchestration scripts
-z80.py      - The intel 8080/Z80 emulator
-q80.py      - The intel 8080/z80 emulator with its instructions overridden for execution on IBMs quantum computer
+z80.py      - The Intel 8080/Z80 emulator
+q80.py      - The Intel 8080/z80 emulator with its instructions overridden for execution on IBMs quantum computer
 ```
 
 8. Edit the Account.py file, paste in your API token and execute it with
@@ -98,7 +98,7 @@ As you would have to join a queue for each instruction it would be extremely slo
 - Why do the example specify a INC2, DEC2 etc?<br>
 I have included multiple methods for each instruction, method 1 (INC1) calls each gate separately whereas method 2 (INC2) implements a quantum circuit for the entire (where possible) instruction so is much faster.
 
-- Why call it Qx86 when you only have intel 8080/Z80 compatibility?<br>
+- Why call it Qx86 when you only have Intel 8080/Z80 compatibility?<br>
 Artistic license! Also q80 is a television set and a qx80 is a car so those names were already taken. Intel x86 compatibility is planned but will require more qubits due to the larger internal registers.
 
 - I get an error when I choose a real Quantum computer.<br>
